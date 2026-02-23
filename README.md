@@ -62,11 +62,13 @@ This prevents:
 ------------------------------------------------------------------------
 
 ## 🛠️ Tech Stack
+---
 
-  Layer                Technology
-  -------------------- ---------------------------------
-  **Backend**          Python (FastAPI)
-  **Database**         MySQL / MariaDB
-  **ORM**              SQLAlchemy (Textual Queries)
-  **Frontend**         Tailwind CSS 3.4, FontAwesome 7
-  **Frontend Logic**   Vanilla JavaScript (ES6+)
+| **Layer**      | **Technology**               |
+|----------------|------------------------------|
+| Backend        | FastAPI                      |
+| Database       | MariaDB                      |
+| ORM            | SQLAlchemy (Textual Queries) |
+| Frontend       | FontAwesome 7                |
+| Frontend Logic | Vanilla JS (ES6+)            |
+
