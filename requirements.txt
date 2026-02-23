@@ -11,3 +11,4 @@ passlib[bcrypt]
 sqlalchemy
 pandas
 pymysql
+alembic

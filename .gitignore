@@ -9,7 +9,10 @@ wheels/
 # Virtual environments
 .venv
 
-db/
+mysql/
 reports/
 tests/
-display/
+nginx/
+.env
+
+.vscode/
