@@ -5,7 +5,7 @@ const qrcode = new QRCode(qrContainer, { width: 300, height: 300 });
 
 let timeLeft = 30;
 const totalTime = 30;
-IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
+IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
 
 async function updateQR() {
     try {

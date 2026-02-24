@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 import pyotp
 from datetime import datetime
 from core.database import engine
@@ -11,7 +10,7 @@ from schemes.attendance import AttendanceRequest
 
 router = APIRouter()
 SHARED_SECRET = "JBSWY3DPEHPK3PXP"
-totp = pyotp.TOTP(SHARED_SECRET, interval=30)
+totp = pyotp.TOTP(SHARED_SECRET, interval=30)  # QR code changes every 30 seconds
 
 router.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 

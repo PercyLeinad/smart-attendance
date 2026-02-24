@@ -1,11 +1,10 @@
 
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import FileResponse
 from datetime import datetime
 from pathlib import Path
 import pandas as pd
 from sqlalchemy import text
 from core.database import engine
-from core.ui import templates
 from fastapi import APIRouter, Depends
 from fastapi import APIRouter, Query
 from datetime import date
@@ -29,17 +28,18 @@ def export_data(
     with engine.connect() as connection:
         query = text("""
             SELECT 
-                l.id, 
-                l.pf, 
-                e.name AS employee_name, 
-                e.department_code,
-                l.arrival_time, 
-                l.checkout_time, 
-                l.date_only
-            FROM attendance_logs l
-            INNER JOIN employees e ON l.pf = e.pf
-            WHERE l.date_only BETWEEN :start_date AND :end_date
-            ORDER BY l.arrival_time DESC
+                e.name,
+                e.pf,
+                d.name AS department_name,
+                a.arrival_time,
+                a.checkout_time
+            FROM attendance_logs AS a
+            INNER JOIN employees AS e 
+                ON e.pf = a.pf
+            INNER JOIN departments AS d
+                ON e.department_code = d.code
+            WHERE a.date_only BETWEEN :start_date AND :end_date
+            ORDER BY a.arrival_time DESC
         """)
 
         result = connection.execute(

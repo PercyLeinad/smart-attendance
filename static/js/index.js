@@ -1,3 +1,5 @@
+IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+
 window.addEventListener('load', function () {
     console.log("Window load event triggered");
     startClock();
@@ -74,7 +76,7 @@ async function submitAttendance() {
     btn.innerText = "Processing...";
 
     try {
-        const response = await fetch(`http://10.10.10.199:8000/check-in`, {
+        const response = await fetch(`${IP}/check-in`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System | Welcome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/assets/fontawesome-free-7.1.0-web/css/all.min.css">
+    <link rel="shortcut icon" href="/static/assets/favicon.ico">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .bg-gradient {
+            background: radial-gradient(circle at top right, #4f46e5, transparent),
+                        radial-gradient(circle at bottom left, #0f172a, #1e293b);
+        }
+    </style>
+</head>
+<body class="bg-gradient min-h-screen flex items-center justify-center p-6">
+
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        
+        <div class="text-white space-y-6">
+            <div class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-2xl shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-shield-check text-3xl"></i>
+            </div>
+            <h1 class="text-5xl font-black tracking-tight">
+                Staff <span class="text-indigo-400">Attendance</span> <br>Management.
+            </h1>
+            <p class="text-slate-300 text-lg leading-relaxed max-w-md">
+                Platform for staff check-ins and administrative management
+            </p>
+            <div class="flex items-center gap-4 text-sm text-slate-400">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> QR Verified</span>
+                <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> Real-time Sync</span>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            
+            <a href="/login" class="glass group p-6 rounded-3xl shadow-2xl flex items-center justify-between hover:translate-x-2 transition-all duration-300 block border-l-4 border-transparent hover:border-indigo-500">
+                <div class="flex items-center gap-5">
+                    <div class="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-user-tie text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Admin Dashboard</h3>
+                        <p class="text-sm text-slate-500 font-medium">Manage staff and generate reports</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
+            </a>
+
+            <a href="/display" class="glass group p-6 rounded-3xl shadow-2xl flex items-center justify-between hover:translate-x-2 transition-all duration-300 block border-l-4 border-transparent hover:border-emerald-500">
+                <div class="flex items-center gap-5">
+                    <div class="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-qrcode text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Staff Check-In</h3>
+                        <p class="text-sm text-slate-500 font-medium">Scan your QR code for today</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-emerald-500 transition-colors"></i>
+            </a>
+
+            <p class="text-center text-slate-500 text-xs mt-6 font-medium uppercase tracking-widest">
+                System Time: <span id="clock" class="text-slate-300">00:00:00</span>
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // Simple Clock for the UI
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>

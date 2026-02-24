@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from api.v1 import attendance, auth, reports
@@ -23,6 +22,10 @@ app.include_router(auth.router, tags=["Authentication"])
 app.include_router(reports.router, tags=["Reports"])
 
 # 4. Root/Static Routes (Keep these simple)
+@app.get("/")
+def serve_default():
+    return FileResponse(str(BASE_DIR / "templates" / "default.html"))
+
 @app.get("/scan")
 def serve_scan():
     return FileResponse(str(BASE_DIR / "templates" / "index.html"))

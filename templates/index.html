@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Attendance</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="/static/assets/favicon.ico">
+
 </head>
 
 <body class="bg-slate-900 flex items-center justify-center h-screen">
@@ -23,7 +25,7 @@
         <h1 id="title" class="text-xl font-bold text-slate-800 mb-2">Attendance</h1>
         <p id="subtitle" class="text-xs text-slate-500 mb-6">Enter your ID to log your session.</p>
 
-        <input type="text" id="staffId" placeholder="Staff ID (e.g. STF-001)"
+        <input type="text" id="staffId" placeholder="PF/ID NUMBER"
             class="w-full border-2 border-slate-200 p-3 rounded-lg mb-4 focus:border-green-500 outline-none transition">
 
         <button onclick="submitAttendance()" id="btn"
