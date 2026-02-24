@@ -16,7 +16,7 @@ corporate environments.
 Staff can check in and check out using:
 
 -   **ID Number**
--   **National ID**
+-   **ANY ID**
 
 This provides flexible identification without compromising validation
 integrity.
@@ -71,4 +71,5 @@ This prevents:
 | ORM            | SQLAlchemy (Textual Queries) |
 | Frontend       | FontAwesome 7                |
 | Frontend Logic | Vanilla JS (ES6+)            |
+
 
