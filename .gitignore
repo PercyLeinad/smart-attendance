@@ -18,4 +18,4 @@ alembic.ini
 alembic/
 .python-version
 uv.lock
-pyroject.toml
+pyproject.toml
