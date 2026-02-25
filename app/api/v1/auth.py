@@ -5,14 +5,36 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from core.database import engine
 from sqlalchemy import text
 from core.ui import templates
+import datetime
 # -----------------------------
+
+SESSION_TIMEOUT = 900  # 15 minutes in seconds
+
+
 def is_admin(request: Request):
     admin = request.session.get("admin")
-    if not admin:
+    last_activity = request.session.get("last_activity")
+
+    if not admin or not last_activity:
         raise HTTPException(
             status_code=status.HTTP_302_FOUND,
             headers={"Location": "/login"}
         )
+
+    # Convert stored timestamp back to datetime
+    last_activity = datetime.datetime.fromisoformat(last_activity)
+
+    # Check if session expired
+    if datetime.datetime.now() - last_activity > datetime.timedelta(seconds=SESSION_TIMEOUT):
+        request.session.clear()
+        raise HTTPException(
+            status_code=status.HTTP_302_FOUND,
+            headers={"Location": "/login?msg=session_expired"}
+        )
+
+    # Update activity timestamp
+    request.session["last_activity"] = datetime.datetime.now().isoformat()
+
     return admin
 
 router = APIRouter()
@@ -48,6 +70,7 @@ def login(request: Request,
 
     request.session.clear()
     request.session["admin"] = username
+    request.session["last_activity"] = datetime.datetime.now().isoformat()
 
     return RedirectResponse("/admin", status_code=303)
 
