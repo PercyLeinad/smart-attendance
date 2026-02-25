@@ -21,9 +21,12 @@ def get_qr_token():
 @router.post("/check-in")
 async def check_in(data: AttendanceRequest):
     # 1. Validation
-    if not totp.verify(data.token, valid_window=1):
-        raise HTTPException(status_code=400, detail="Invalid or Expired QR Code.")
-    
+    if not data.token or not totp.verify(data.token, valid_window=1):
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid or Expired QR Code. Please re-scan."
+            )
+        
     # 2. Database Operations
     try:
         with engine.begin() as conn:
