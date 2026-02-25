@@ -30,6 +30,7 @@ def export_data(
             SELECT 
                 UPPER(e.name) AS Name,
                 UPPER(e.pf) AS Pf,
+                UPPER(e.department_code) AS "Department Code",
                 UPPER(d.name) AS Department,
                 UPPER(a.arrival_time) AS Arrival,
                 UPPER(a.checkout_time) AS Checkout
