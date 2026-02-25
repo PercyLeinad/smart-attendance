@@ -1,5 +1,5 @@
 fastapi 
-uvicorn 
+uvicorn[standard]
 pyotp 
 qrcode[pil]
 requests
@@ -12,3 +12,5 @@ sqlalchemy
 pandas
 pymysql
 alembic
+bcrypt
+passlib[argon2]
