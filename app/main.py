@@ -8,6 +8,14 @@ from core.ui import BASE_DIR
 
 app = FastAPI()
 
+@app.middleware("http")
+async def disable_cache(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 # 1. Templates & Static Files Setups
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
