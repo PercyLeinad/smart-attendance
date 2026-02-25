@@ -28,11 +28,11 @@ def export_data(
     with engine.connect() as connection:
         query = text("""
             SELECT 
-                e.name,
-                e.pf,
-                d.name AS department_name,
-                a.arrival_time,
-                a.checkout_time
+                UPPER(e.name) AS Name,
+                UPPER(e.pf) AS Pf,
+                UPPER(d.name) AS Department,
+                UPPER(a.arrival_time) AS Arrival,
+                UPPER(a.checkout_time) AS Checkout
             FROM attendance_logs AS a
             INNER JOIN employees AS e 
                 ON e.pf = a.pf
