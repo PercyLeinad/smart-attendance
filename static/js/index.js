@@ -1,4 +1,4 @@
-IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
 
 window.addEventListener('load', function () {
     console.log("Window load event triggered");
@@ -57,20 +57,61 @@ function startClock() {
 }
 
 async function submitAttendance() {
-    const btn = document.getElementById('btn');
-    const msg = document.getElementById('message');
+
     const staffId = document.getElementById('staffId').value;
-    const iconCont = document.getElementById('icon-container');
+    const msg = document.getElementById('message');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-
-    // Validation: Staff ID
     if (!staffId) {
         msg.innerText = "⚠️ ID Required";
         msg.className = "mt-4 text-sm font-medium text-amber-600";
         return;
     }
+
+    try {
+        // Ask backend for current status
+        const statusResponse = await fetch(`${IP}/attendance-status?pf=${staffId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const statusData = await statusResponse.json();
+
+        let actionText = "";
+
+        if (statusData.current_status === "checked_in") {
+            actionText = "Confirm Check-Out?";
+        } else {
+            actionText = "Confirm Check-In?";
+        }
+
+        document.getElementById('confirmText').innerText =
+            `${actionText} (PF/ID: ${staffId})`;
+
+        document.getElementById('confirmModal').classList.remove('hidden');
+        document.getElementById('confirmModal').classList.add('flex');
+
+    } catch (err) {
+        msg.innerText = "📡 Unable to verify status";
+        msg.className = "mt-4 text-sm font-medium text-red-500";
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+async function proceedAttendance() {
+
+    closeModal();
+
+    const btn = document.getElementById('btn');
+    const msg = document.getElementById('message');
+    const staffId = document.getElementById('staffId').value;
+    const iconCont = document.getElementById('icon-container');
+
+    const token = new URLSearchParams(window.location.search).get('token');
 
     btn.disabled = true;
     btn.innerText = "Processing...";
@@ -88,6 +129,7 @@ async function submitAttendance() {
         const result = await response.json();
 
         if (response.ok) {
+
             if (result.status === "checked_in") {
                 msg.innerText = `✅ Welcome, ${result.staff}! Checked in.`;
                 msg.className = "mt-4 text-sm font-medium text-green-600";
@@ -98,16 +140,22 @@ async function submitAttendance() {
                 iconCont.className = "mb-4 text-blue-500";
             }
 
-            // Hide elements on success
             document.getElementById('staffId').classList.add('hidden');
             btn.classList.add('hidden');
+
+            // Optional: Auto reset after 5 sec
+            setTimeout(() => {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                window.location.reload();
+            }, 5000);
+
         } else {
-            // Handle backend errors (Expired token, invalid ID, etc.)
             msg.innerText = "❌ " + (result.detail || "Error");
             msg.className = "mt-4 text-sm font-medium text-red-600";
             btn.disabled = false;
             btn.innerText = "Try Again";
         }
+
     } catch (err) {
         msg.innerText = "📡 Connection Error";
         msg.className = "mt-4 text-sm font-medium text-red-500";
