@@ -7,10 +7,11 @@ from core.database import engine
 from sqlalchemy import text
 from core.ui import BASE_DIR
 from schemes.attendance import AttendanceRequest
+from fastapi import Query
 
 router = APIRouter()
 SHARED_SECRET = "JBSWY3DPEHPK3PXP"
-totp = pyotp.TOTP(SHARED_SECRET, interval=30)  # QR code changes every 30 seconds
+totp = pyotp.TOTP(SHARED_SECRET, interval=60,digits=10)  # QR code changes every 30 seconds
 
 router.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
@@ -93,7 +94,31 @@ async def check_in(data: AttendanceRequest):
     except Exception as e:
         print(f"Database Error: {e}") 
         raise HTTPException(status_code=500, detail="A database error occurred.")
-        
+
+
+
+@router.get("/attendance-status")
+async def attendance_status(pf: str = Query(...)):
+    
+    with engine.begin() as conn:
+        result = conn.execute(text("""
+            SELECT checkout_time, arrival_time
+            FROM attendance_logs
+            WHERE pf = :pf
+            AND arrival_time >= CURDATE()
+            AND arrival_time < CURDATE() + INTERVAL 1 DAY
+            ORDER BY arrival_time DESC
+            LIMIT 1
+        """), {"pf": pf}).fetchone()
+
+    if not result:
+        return {"current_status": "not_checked_in"}
+
+    if result.checkout_time is None:
+        return {"current_status": "checked_in"}
+
+    return {"current_status": "not_checked_in"}
+          
 @router.get("/display")
 def serve_display():
     return FileResponse(str(BASE_DIR / "templates" / "display.html"))
