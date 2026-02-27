@@ -1,21 +1,21 @@
+// let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
+
 const qrContainer = document.getElementById("qrcode");
 const timerElement = document.getElementById("timer");
 const progressBar = document.getElementById("progress-bar"); // New reference
 const qrcode = new QRCode(qrContainer, { width: 300, height: 300 });
 
-let timeLeft = 30;
-const totalTime = 30;
-IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+
+let timeLeft = 120;
+const totalTime = 120;
 
 async function updateQR() {
     try {
         const response = await fetch('/get-current-qr-token');
         const data = await response.json();
         
-        // const baseUrl = 
-        // const qrUrl = `${baseUrl}/scan?token=${data.token}`;
-        const baseUrl = IP; // Change to your backend URL if different
-        const qrUrl = `${baseUrl}/scan?token=${data.token}`;
+        const qrUrl = `${IP}/scan?token=${data.token}`;
         
         qrcode.clear();
         qrcode.makeCode(qrUrl);

@@ -10,6 +10,26 @@
 
 </head>
 
+<!-- Confirmation pop up -->
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-2xl p-6 w-80 text-center shadow-xl">
+        <h2 class="text-lg font-bold mb-3">Confirm Attendance</h2>
+
+        <p id="confirmText" class="mb-6 text-gray-600 text-sm"></p>
+
+        <div class="flex gap-3">
+            <button onclick="closeModal()" class="w-full bg-gray-300 py-2 rounded-lg">
+                Cancel
+            </button>
+
+            <button onclick="proceedAttendance()" class="w-full bg-slate-800 text-white py-2 rounded-lg">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
 <body class="bg-slate-900 flex items-center justify-center h-screen">
     <div id="card" class="bg-white p-8 rounded-2xl shadow-xl w-80 text-center transition-all duration-300">
         <div id="icon-container" class="mb-4 text-green-500">
@@ -27,14 +47,18 @@
 
         <input type="text" id="staffId" placeholder="PF/ID NUMBER"
             class="w-full border-2 border-slate-200 p-3 rounded-lg mb-4 focus:border-green-500 outline-none transition">
-
-        <button onclick="submitAttendance()" id="btn"
-            class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 active:scale-95 transition">
-            Submit Attendance
+        <button id="btn" onclick="submitAttendance()" class="w-full bg-slate-800 text-white py-2 rounded-lg">
+            Submit
         </button>
-
         <p id="message" class="mt-4 text-sm font-medium min-h-[2.5rem] flex items-center justify-center"></p>
+    
+        <button id="resetBtn" onclick="manualReset()" 
+            class="hidden mt-2 w-full border border-slate-300 text-slate-500 py-2 rounded-lg text-xs hover:bg-slate-50 transition">
+            Reset Now (10s)
+        </button>
+    
     </div>
+
 </body>
 <script src="/static/js/index.js"></script>
 
