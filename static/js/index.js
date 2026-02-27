@@ -1,4 +1,5 @@
-let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+// let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
 
 window.addEventListener('load', function () {
     console.log("Window load event triggered");
@@ -56,43 +57,60 @@ function startClock() {
     setInterval(updateTime, 1000);
 }
 
-async function submitAttendance() {
-
-    const staffId = document.getElementById('staffId').value;
+async function submitAttendance(confirm = false) {
+    const staffId = document.getElementById('staffId').value.trim();
     const msg = document.getElementById('message');
+    const token = new URLSearchParams(window.location.search).get('token');
 
     if (!staffId) {
         msg.innerText = "⚠️ ID Required";
-        msg.className = "mt-4 text-sm font-medium text-amber-600";
         return;
     }
 
     try {
-        // Ask backend for current status
-        const statusResponse = await fetch(`${IP}/attendance-status?pf=${staffId}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+        const response = await fetch(`${IP}/check-in`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                staff_id: staffId,
+                token: token,
+                confirm: confirm // This tells the backend to override if already signed in
+            })
         });
 
-        const statusData = await statusResponse.json();
+        const result = await response.json();
 
-        let actionText = "";
-
-        if (statusData.current_status === "checked_in") {
-            actionText = "Confirm Check-Out?";
-        } else {
-            actionText = "Confirm Check-In?";
+        // 🔵 Scenario: Show confirmation modal
+        if (result.status === "confirm_checkout") {
+            document.getElementById('confirmText').innerText = "Already signed in.\nWish to Sign out and proceed?";
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            return; 
         }
 
-        document.getElementById('confirmText').innerText =
-            `${actionText} (PF/ID: ${staffId})`;
-
-        document.getElementById('confirmModal').classList.remove('hidden');
-        document.getElementById('confirmModal').classList.add('flex');
+        // 🟢 Other Scenarios: Success/Error
+        if (result.status === "checked_in") {
+            msg.innerText = `✅ Welcome, ${result.staff}!`;
+        } else if (result.status === "checked_out") {
+            msg.innerText = `👋 Goodbye, ${result.staff}!`;
+        } else if (result.status === "completed") {
+            msg.innerText = "🚫 Attendance already completed today";
+        }
+        
+        // Hide the submit button and input to prevent double-taps
+        btn.style.display = 'none';
+        document.getElementById('staffId').style.display = 'none';
+        
+        // Close modal if it was open
+        closeModal();
+        
+        // Start the 10-second redirect process
+        startResetTimer();
 
     } catch (err) {
-        msg.innerText = "📡 Unable to verify status";
-        msg.className = "mt-4 text-sm font-medium text-red-500";
+        msg.innerText = "📡 Connection Error";
+        console.error(err);
     }
 }
 
@@ -102,64 +120,34 @@ function closeModal() {
     modal.classList.remove('flex');
 }
 
-async function proceedAttendance() {
-
-    closeModal();
-
-    const btn = document.getElementById('btn');
-    const msg = document.getElementById('message');
-    const staffId = document.getElementById('staffId').value;
-    const iconCont = document.getElementById('icon-container');
-
-    const token = new URLSearchParams(window.location.search).get('token');
-
-    btn.disabled = true;
-    btn.innerText = "Processing...";
-
-    try {
-        const response = await fetch(`${IP}/check-in`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                staff_id: staffId,
-                token: token
-            })
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-
-            if (result.status === "checked_in") {
-                msg.innerText = `✅ Welcome, ${result.staff}! Checked in.`;
-                msg.className = "mt-4 text-sm font-medium text-green-600";
-                iconCont.className = "mb-4 text-green-500";
-            } else {
-                msg.innerText = `👋 Goodbye, ${result.staff}! Checked out.`;
-                msg.className = "mt-4 text-sm font-medium text-blue-600";
-                iconCont.className = "mb-4 text-blue-500";
-            }
-
-            document.getElementById('staffId').classList.add('hidden');
-            btn.classList.add('hidden');
-
-            // Optional: Auto reset after 5 sec
-            setTimeout(() => {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                window.location.reload();
-            }, 5000);
-
-        } else {
-            msg.innerText = "❌ " + (result.detail || "Error");
-            msg.className = "mt-4 text-sm font-medium text-red-600";
-            btn.disabled = false;
-            btn.innerText = "Try Again";
-        }
-
-    } catch (err) {
-        msg.innerText = "📡 Connection Error";
-        msg.className = "mt-4 text-sm font-medium text-red-500";
-        btn.disabled = false;
-        btn.innerText = "Retry";
-    }
+// This is the function the MODAL "Confirm" button should call
+function proceedAttendance() {
+    submitAttendance(true);
 }
+
+
+function startResetTimer() {
+    const msg = document.getElementById('message');
+    let timeLeft = 10;
+
+    // Create a small reset button dynamically or show a hidden one
+    const resetBtn = document.getElementById('resetBtn');
+    resetBtn.classList.remove('hidden');
+
+    const interval = setInterval(() => {
+        timeLeft--;
+        resetBtn.innerText = `Reset Now (${timeLeft}s)`;
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            window.location.href = '/scan'; // Redirect to scan page
+        }
+    }, 1000);
+}
+
+// Redirect manually if they don't want to wait 10 seconds
+function manualReset() {
+    window.location.href = '/scan';
+}
+
+

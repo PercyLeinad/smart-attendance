@@ -1,5 +1,5 @@
-let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
-
+// let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
+let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
 
 const qrContainer = document.getElementById("qrcode");
 const timerElement = document.getElementById("timer");
@@ -7,8 +7,8 @@ const progressBar = document.getElementById("progress-bar"); // New reference
 const qrcode = new QRCode(qrContainer, { width: 300, height: 300 });
 
 
-let timeLeft = 60;
-const totalTime = 60;
+let timeLeft = 120;
+const totalTime = 120;
 
 async function updateQR() {
     try {
