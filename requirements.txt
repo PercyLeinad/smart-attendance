@@ -3,7 +3,6 @@ uvicorn[standard]
 pyotp 
 qrcode[pil]
 requests
-mysql-connector-python
 jinja2
 itsdangerous
 python-multipart 
