@@ -1,6 +1,12 @@
 // let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
 let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
 
+window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 window.addEventListener('load', function () {
     console.log("Window load event triggered");
 
@@ -57,6 +63,9 @@ async function submitAttendance(confirm = false) {
     const msg = document.getElementById('message');
     const token = new URLSearchParams(window.location.search).get('token');
 
+    msg.innerText = "";
+    msg.classList.remove('text-red-500', 'text-green-500');
+
     if (!staffId) {
         msg.innerText = "⚠️ ID Required";
         return;
@@ -69,42 +78,50 @@ async function submitAttendance(confirm = false) {
             body: JSON.stringify({
                 staff_id: staffId,
                 token: token,
-                confirm: confirm // This tells the backend to override if already signed in
+                confirm: confirm
             })
         });
 
         const result = await response.json();
 
+        // ✅ HANDLE FASTAPI ERRORS FIRST
+        if (!response.ok) {
+            msg.innerText = `❌ ${result.detail || "Request failed"}`;
+            msg.classList.add('text-red-500');
+            return;
+        }
+
         // 🔵 Scenario: Show confirmation modal
         if (result.status === "confirm_checkout") {
-            document.getElementById('confirmText').innerText = "Already signed in.\nWish to Sign out and proceed?";
+            document.getElementById('confirmText').innerText =
+                "Already signed in.\nWish to Sign out and proceed?";
             const modal = document.getElementById('confirmModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            return; 
+            return;
         }
 
-        // 🟢 Other Scenarios: Success/Error
+        // 🟢 Success Scenarios
         if (result.status === "checked_in") {
             msg.innerText = `✅ Welcome, ${result.staff}!`;
+            msg.classList.add('text-green-500');
         } else if (result.status === "checked_out") {
             msg.innerText = `👋 Goodbye, ${result.staff}!`;
+            msg.classList.add('text-green-500');
         } else if (result.status === "completed") {
             msg.innerText = "🚫 Attendance already completed today";
+            msg.classList.add('text-red-500');
         }
-        
-        // Hide the submit button and input to prevent double-taps
+
         btn.style.display = 'none';
         document.getElementById('staffId').style.display = 'none';
-        
-        // Close modal if it was open
+
         closeModal();
-        
-        // Start the 10-second redirect process
         startResetTimer();
 
     } catch (err) {
         msg.innerText = "📡 Connection Error";
+        msg.classList.add('text-red-500');
         console.error(err);
     }
 }
@@ -144,5 +161,4 @@ function startResetTimer() {
 function manualReset() {
     window.location.href = '/scan';
 }
-
 
