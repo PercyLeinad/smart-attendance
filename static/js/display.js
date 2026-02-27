@@ -7,8 +7,8 @@ const progressBar = document.getElementById("progress-bar"); // New reference
 const qrcode = new QRCode(qrContainer, { width: 300, height: 300 });
 
 
-let timeLeft = 120;
-const totalTime = 120;
+let timeLeft = 45; // Initial time left in seconds
+const totalTime = 45; // Total time for the countdown
 
 async function updateQR() {
     try {
