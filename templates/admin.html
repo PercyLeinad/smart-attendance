@@ -1,133 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/assets/fontawesome-free-7.1.0-web/css/all.min.css">
-    <link rel="shortcut icon" href="/static/assets/favicon.ico">
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    </style>
 </head>
 
-<body class="bg-[#f8fafc] min-h-screen font-sans text-slate-900">
+<body class="bg-[#f8fafc] font-sans text-slate-900 flex">
 
-    <nav
-        class="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-3">
+    <aside class="w-64 h-screen bg-white border-r border-slate-200 fixed left-0 top-0 flex flex-col z-20">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-50">
             <div class="bg-indigo-600 p-2 rounded-lg">
                 <i class="fa-solid fa-chart-pie text-white"></i>
             </div>
-            <h1 class="font-bold text-xl tracking-tight">Dashboard<span class="text-indigo-600"></span></h1>
+            <h1 class="font-bold text-xl tracking-tight text-slate-800">Admin<span class="text-indigo-600"></span></h1>
         </div>
 
-        <div class="flex items-center gap-4">
-            <button class="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-bell"></i>
-            </button>
-            <div class="h-8 w-[1px] bg-slate-200"></div>
-            <a href="/admin/masters"
-                class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors">
-                <span>Admins</span>
+        <nav class="flex-1 p-4 space-y-1">
+            <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Main Menu</p>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-indigo-600 bg-indigo-50 rounded-xl transition-all">
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+            </a>
+
+            <a href="/admin/masters" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all">
                 <i class="fa-solid fa-user-gear"></i>
+                Admins
             </a>
-            <div class="h-8 w-[1px] bg-slate-200"></div>
-            <a href="/logout"
-                class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors">
-                <span>Logout</span>
-                <i class="fa-solid fa-right-from-bracket"></i>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all">
+                <i class="fa-solid fa-users"></i>
+                Staff List
             </a>
-        </div>
 
-    </nav>
+            <div class="pt-4 mt-4 border-t border-slate-100">
+                <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Support</p>
+                <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </div>
+        </nav>
 
-    <main class="p-8 max-w-6xl mx-auto space-y-8">
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Today's Presence</p>
-                    <p class="text-3xl font-bold mt-1 text-emerald-600">{{ stats.today_attendance }}</p>
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
+                <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                    Name 
                 </div>
-                <div class="text-emerald-500"><i class="fa-solid fa-calendar-check text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Total Staff</p>
-                    <p class="text-3xl font-bold mt-1">{{ stats.total_employees }}</p>
+                <div class="flex-1 overflow-hidden">
+                    <p class="text-xs font-bold text-slate-700 truncate">System Admin</p>
                 </div>
-                <div class="text-indigo-500"><i class="fa-solid fa-user-group text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Permanent Staff</p>
-                    <p class="text-3xl font-bold mt-1 text-emerald-500">{{ stats.permanent }}</p>
-                </div>
-                <div class="text-emerald-500"><i class="fa-solid fa-user text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Casual Staff</p>
-                    <p class="text-3xl font-bold mt-1 text-emerald-500">{{ stats.casuals }}</p>
-                </div>
-                <div class="text-emerald-500"><i class="fa-solid fa-circle-check text-2xl"></i></div>
             </div>
         </div>
+    </aside>
 
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-            <div class="mb-6">
-                <h3 class="text-lg font-bold text-slate-800">Reports Engine</h3>
-                <p class="text-sm text-slate-500">Select custom ranges to analyze staff performance.</p>
-            </div>
-
-            <form id="reportForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Start Date</label>
-                    <input type="date" name="start_date" required
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">End Date</label>
-                    <input type="date" name="end_date" required
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                </div>
-
-                <button type="submit"
-                    class="bg-slate-900 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-all shadow-md active:scale-95">
-                    <i class="fa-solid fa-magnifying-glass mr-2 text-sm"></i> Generate
+    <div class="flex-1 ml-64">
+        
+        <header class="h-16 bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 px-8 flex justify-between items-center">
+            <h2 class="font-bold text-slate-800">Attendance Overview</h2>
+            
+            <div class="flex items-center gap-4">
+                <button class="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
+            </div>
+        </header>
 
-                <button type="button" id="exportBtn"
-                    class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
-                </button>
-            </form>
-        </div>
+        <main class="p-8 max-w-6xl mx-auto space-y-8">
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50/50 border-b border-slate-100">
-                    <tr>
-                        <th class="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Staff PF Number
-                        </th>
-                        <th class="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Days Present
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="reportBody" class="divide-y divide-slate-50">
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td colspan="3" class="px-8 py-12 text-center">
-                            <div class="flex flex-col items-center gap-2 text-slate-400">
-                                <i class="fa-solid fa-inbox text-4xl mb-2 opacity-20"></i>
-                                <p>No data loaded for this range</p>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Today's Presence</p>
+                        <p class="text-3xl font-bold mt-1 text-indigo-600">{{ stats.today_attendance }}</p>
+                    </div>
+                    <div class="text-indigo-200"><i class="fa-solid fa-calendar-check text-2xl"></i></div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Total Staff</p>
+                        <p class="text-3xl font-bold mt-1 text-slate-800">{{ stats.total_employees }}</p>
+                    </div>
+                    <div class="text-slate-200"><i class="fa-solid fa-user-group text-2xl"></i></div>
+                </div>
+                </div>
 
-    </main>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800" id="reportTitle">Reports Engine</h3>
+                        <p class="text-sm text-slate-500">Analyze performance by date range.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="exportBtn" class="px-4 py-2 text-sm font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv text-emerald-600"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <form id="reportForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Start Date</label>
+                        <input type="date" name="start_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">End Date</label>
+                        <input type="date" name="end_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-all shadow-lg shadow-indigo-100 active:scale-95">
+                        <i class="fa-solid fa-magnifying-glass mr-2 text-sm"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50/50 border-b border-slate-100">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Staff Identification</th>
+                            <th class="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Attendance Metric</th>
+                            <th class="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody" class="divide-y divide-slate-50">
+                        </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/static/js/reports.js"></script>
 </body>
-<script src="/static/js/reports.js"></script>
 
 </html>
