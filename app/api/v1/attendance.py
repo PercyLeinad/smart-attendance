@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,11 +9,18 @@ from core.database import engine
 from sqlalchemy import text
 from core.ui import BASE_DIR
 from schemes.attendance import AttendanceRequest
-from fastapi import Query
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 router = APIRouter()
-SHARED_SECRET = "JBSWY3DPEHPK3PXP"
-totp = pyotp.TOTP(SHARED_SECRET, interval=120,digits=6)  # QR code changes every 30 seconds
+
+SHARED_SECRET = os.getenv("SHARED_SECRET")
+if not SHARED_SECRET:
+    raise ValueError("SHARED_SECRET environment variable is not set.")
+
+totp = pyotp.TOTP(SHARED_SECRET, interval=45,digits=10)  # QR code changes every 45 seconds
 
 router.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
