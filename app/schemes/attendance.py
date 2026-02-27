@@ -1,10 +1,11 @@
 
 from pydantic import BaseModel, field_validator,Field
-
+from typing import Optional
 
 class AttendanceRequest(BaseModel):
-    staff_id: str = Field(max_length=10, description="The staff ID or PF number")
+    staff_id: str
     token: str
+    confirm: Optional[bool] = False
     
     @field_validator('staff_id')
     @classmethod
