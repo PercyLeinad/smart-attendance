@@ -57,12 +57,16 @@ function startClock() {
 }
 
 async function submitAttendance(confirm = false) {
-    const staffId = document.getElementById('staffId').value.trim();
+    const staffIdInput = document.getElementById('staffId');
+    const staffId = staffIdInput.value.trim();
     const msg = document.getElementById('message');
+    const btn = document.getElementById('btn');
+    const icon = document.getElementById('main-icon-fa');
     const token = new URLSearchParams(window.location.search).get('token');
 
     if (!staffId) {
-        msg.innerText = "⚠️ ID Required";
+        msg.innerText = "⚠️ ID Number Required";
+        msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-amber-600 bg-amber-50";
         return;
     }
 
@@ -73,42 +77,52 @@ async function submitAttendance(confirm = false) {
             body: JSON.stringify({
                 staff_id: staffId,
                 token: token,
-                confirm: confirm // This tells the backend to override if already signed in
+                confirm: confirm 
             })
         });
 
         const result = await response.json();
 
-        // 🔵 Scenario: Show confirmation modal
+        // --- ERROR HANDLING (400, 404, etc.) ---
+        if (!response.ok) {
+            msg.innerText = `❌ ${result.detail || "Error occurred"}`;
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-red-600 bg-red-50 border border-red-100";
+            if(icon) icon.className = "fa-solid fa-circle-exclamation text-3xl text-red-500";
+            return; // Stop execution here
+        }
+
+        // --- SUCCESS SCENARIOS ---
         if (result.status === "confirm_checkout") {
-            document.getElementById('confirmText').innerText = "Already signed in.\nWish to Sign out and proceed?";
+            document.getElementById('confirmText').innerText = `Staff: ${result.staff}\nAlready signed in. Wish to Sign out?`;
             const modal = document.getElementById('confirmModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             return; 
         }
 
-        // 🟢 Other Scenarios: Success/Error
         if (result.status === "checked_in") {
             msg.innerText = `✅ Welcome, ${result.staff}!`;
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-emerald-700 bg-emerald-100";
+            if(icon) icon.className = "fa-solid fa-check-double text-3xl text-emerald-600";
         } else if (result.status === "checked_out") {
             msg.innerText = `👋 Goodbye, ${result.staff}!`;
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-amber-700 bg-amber-100";
+            if(icon) icon.className = "fa-solid fa-door-open text-3xl text-amber-600";
         } else if (result.status === "completed") {
             msg.innerText = "🚫 Attendance already completed today";
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-slate-600 bg-slate-100";
         }
         
-        // Hide the submit button and input to prevent double-taps
-        btn.style.display = 'none';
-        document.getElementById('staffId').style.display = 'none';
+        // Hide inputs on success
+        if(btn) btn.style.display = 'none';
+        staffIdInput.style.display = 'none';
         
-        // Close modal if it was open
         closeModal();
-        
-        // Start the 10-second redirect process
         startResetTimer();
 
     } catch (err) {
         msg.innerText = "📡 Connection Error";
+        msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-red-600 bg-red-50";
         console.error(err);
     }
 }
