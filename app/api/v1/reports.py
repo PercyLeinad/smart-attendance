@@ -28,9 +28,10 @@ def export_data(
     with engine.connect() as connection:
         query = text("""
             SELECT 
-                UPPER(e.name) AS Name,
                 UPPER(e.pf) AS Pf,
-                UPPER(d.name) AS Department,
+                UPPER(e.name) AS Name,
+                UPPER(d.code) AS "Department Code",
+                UPPER(d.name) AS "Department Name",
                 UPPER(a.arrival_time) AS Arrival,
                 UPPER(a.checkout_time) AS Checkout
             FROM attendance_logs AS a
