@@ -79,10 +79,20 @@ def report_by_range(
     with engine.connect() as connection:
         result = connection.execute(
             text("""
-                SELECT pf, COUNT(*) as days_present
-                FROM attendance_logs
-                WHERE date_only BETWEEN :start_date AND :end_date
-                GROUP BY pf
+            SELECT 
+                UPPER(e.pf) AS Pf,
+                UPPER(e.name) AS Name,
+                UPPER(d.code) AS "Department Code",
+                UPPER(d.name) AS "Department Name",
+                UPPER(a.arrival_time) AS Arrival,
+                UPPER(a.checkout_time) AS Checkout
+            FROM attendance_logs AS a
+            INNER JOIN employees AS e 
+                ON e.pf = a.pf
+            INNER JOIN departments AS d
+                ON e.department_code = d.code
+            WHERE a.date_only BETWEEN :start_date AND :end_date
+            ORDER BY a.arrival_time DESC
             """),
             {
                 "start_date": start_date,
