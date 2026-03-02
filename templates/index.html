@@ -4,62 +4,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Attendance</title>
+    <title>MUST | Smart Attendance Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="shortcut icon" href="/static/assets/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top left, #065f46, #064e3b);
+        }
 
+        .must-gold-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.3);
+        }
+
+        .pulse-emerald {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .8; transform: scale(1.05); }
+        }
+    </style>
 </head>
 
-<!-- Confirmation pop up -->
-<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+<body class="flex items-center justify-center h-screen overflow-hidden">
 
-    <div class="bg-white rounded-2xl p-6 w-80 text-center shadow-xl">
-        <h2 class="text-lg font-bold mb-3">Confirm Attendance</h2>
+    <div id="confirmModal" class="fixed inset-0 bg-emerald-950/80 backdrop-blur-sm hidden items-center justify-center z-50 transition-all">
+        <div class="bg-white rounded-[2.5rem] p-8 w-96 text-center shadow-2xl border border-emerald-100 transform scale-100">
+            <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-fingerprint"></i>
+            </div>
+            <h2 class="text-xl font-black text-emerald-950 mb-2">Confirm Identity</h2>
+            <p id="confirmText" class="mb-8 text-emerald-700/60 text-sm font-medium leading-relaxed"></p>
 
-        <p id="confirmText" class="mb-6 text-gray-600 text-sm"></p>
-
-        <div class="flex gap-3">
-            <button onclick="closeModal()" class="w-full bg-gray-300 py-2 rounded-lg">
-                Cancel
-            </button>
-
-            <button onclick="proceedAttendance()" class="w-full bg-slate-800 text-white py-2 rounded-lg">
-                Confirm
-            </button>
+            <div class="flex gap-4">
+                <button onclick="closeModal()" class="w-full bg-emerald-50 text-emerald-700 font-bold py-3 rounded-xl hover:bg-emerald-100 transition-all">
+                    Cancel
+                </button>
+                <button onclick="proceedAttendance()" class="w-full btn-gold text-white font-bold py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all">
+                    Verify
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<body class="bg-slate-900 flex items-center justify-center h-screen">
-    <div id="card" class="bg-white p-8 rounded-2xl shadow-xl w-80 text-center transition-all duration-300">
-        <div id="icon-container" class="mb-4 text-green-500">
-            <svg id="main-icon" class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                </path>
-            </svg>
-        </div>
-        <div id="clock" class="text-2xl font-mono font-bold text-slate-700 mb-4 tracking-widest">
+    <div id="card" class="glass-panel p-10 rounded-[3rem] shadow-2xl w-[22rem] text-center relative overflow-hidden">
+        
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+
+        <div id="clock" class="text-4xl font-black text-emerald-950 mb-1 tracking-tight">
             00:00:00
         </div>
-        <h1 id="title" class="text-xl font-bold text-slate-800 mb-2">Attendance</h1>
-        <p id="subtitle" class="text-xs text-slate-500 mb-6">Enter your ID to log your session.</p>
+        <p class="text-[10px] font-bold text-amber-600 uppercase tracking-[0.3em] mb-8">Server Time</p>
 
-        <input type="text" id="staffId" placeholder="PF/ID NUMBER"
-            class="w-full border-2 border-slate-200 p-3 rounded-lg mb-4 focus:border-green-500 outline-none transition">
-        <button id="btn" onclick="submitAttendance()" class="w-full bg-slate-800 text-white py-2 rounded-lg">
-            Submit
+        <div id="icon-container" class="mb-6 relative">
+            <div class="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto transition-all duration-500 pulse-emerald">
+                <i id="main-icon-fa" class="fa-solid fa-id-card text-3xl text-emerald-600"></i>
+            </div>
+        </div>
+
+        <h1 id="title" class="text-2xl font-black text-emerald-950 mb-2">Staff Portal</h1>
+        <p id="subtitle" class="text-xs font-medium text-emerald-700/50 mb-8 leading-relaxed">
+            Please enter your <span class="text-emerald-700 font-bold">PF Number</span> to log your attendance session.
+        </p>
+
+        <div class="relative mb-4 group">
+            <input type="text" id="staffId" placeholder="PF / ID NUMBER"
+                class="w-full bg-emerald-50/50 border-2 border-emerald-100 p-4 pl-12 rounded-2xl focus:border-amber-500 focus:bg-white outline-none transition-all font-bold text-emerald-950 placeholder:text-emerald-200 uppercase tracking-widest text-sm">
+        </div>
+
+        <button id="btn" onclick="submitAttendance()" 
+            class="w-full btn-gold text-white font-black py-4 rounded-2xl text-sm tracking-widest uppercase hover:brightness-110 active:scale-95 transition-all">
+            Log Attendance
         </button>
-        <p id="message" class="mt-4 text-sm font-medium min-h-[2.5rem] flex items-center justify-center"></p>
+
+        <div id="message" class="mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl transition-all"></div>
     
         <button id="resetBtn" onclick="manualReset()" 
-            class="hidden mt-2 w-full border border-slate-300 text-slate-500 py-2 rounded-lg text-xs hover:bg-slate-50 transition">
-            Reset Now (10s)
+            class="hidden mt-4 w-full text-emerald-400 font-bold py-2 text-[10px] uppercase tracking-widest hover:text-emerald-600 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-right animate-spin-slow"></i> 
+            Auto-Reset in <span id="timer">10</span>s
         </button>
     
+        <div class="mt-8 pt-6 border-t border-emerald-50 flex items-center justify-center gap-2">
+            <div class="w-5 h-5 bg-emerald-900 rounded-md flex items-center justify-center text-[10px] text-amber-400">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <span class="text-[10px] font-black text-emerald-900/30 uppercase tracking-widest">MUST Technology</span>
+        </div>
     </div>
 
 </body>
 <script src="/static/js/index.js"></script>
-
 </html>
