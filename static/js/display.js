@@ -1,5 +1,4 @@
-// let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
-let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
+const BASE_URL = window.location.origin; // Automatically set to current origin
 
 const qrContainer = document.getElementById("qrcode");
 const timerElement = document.getElementById("timer");
@@ -15,7 +14,7 @@ async function updateQR() {
         const response = await fetch('/get-current-qr-token');
         const data = await response.json();
         
-        const qrUrl = `${IP}/scan?token=${data.token}`;
+        const qrUrl = `${BASE_URL}/scan?token=${data.token}`;
         
         qrcode.clear();
         qrcode.makeCode(qrUrl);

@@ -1,5 +1,4 @@
-// let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
-let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
+const BASE_URL = window.location.origin; // Automatically set to current origin
 
 window.addEventListener('load', function () {
     console.log("Window load event triggered");
@@ -68,7 +67,7 @@ async function submitAttendance(confirm = false) {
     }
 
     try {
-        const response = await fetch(`${IP}/check-in`, {
+        const response = await fetch(`${BASE_URL}/check-in`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
