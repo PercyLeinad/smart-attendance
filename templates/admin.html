@@ -1,133 +1,197 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Emerald & Gold</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/assets/fontawesome-free-7.1.0-web/css/all.min.css">
-    <link rel="shortcut icon" href="/static/assets/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 10px; }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .emerald-soft-gradient {
+            background: linear-gradient(to bottom right, #ffffff, #ecfdf5);
+        }
+
+        .active-nav {
+            background: linear-gradient(90deg, #ecfdf5 0%, #ffffff 100%);
+            border-left: 4px solid #d97706;
+            color: #065f46 !important;
+        }
+    </style>
 </head>
 
-<body class="bg-[#f8fafc] min-h-screen font-sans text-slate-900">
+<body class="bg-[#fcfdfa] text-slate-900 flex">
 
-    <nav
-        class="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="bg-indigo-600 p-2 rounded-lg">
-                <i class="fa-solid fa-chart-pie text-white"></i>
+    <aside class="w-64 h-screen bg-white border-r border-emerald-100 fixed left-0 top-0 flex flex-col z-20 shadow-xl shadow-emerald-900/5">
+        <div class="p-6 flex items-center gap-3 border-b border-emerald-50">
+            <div class="gold-gradient p-2.5 rounded-xl shadow-lg shadow-amber-500/20">
+                <i class="fa-solid fa-leaf text-white text-lg"></i>
             </div>
-            <h1 class="font-bold text-xl tracking-tight">Dashboard<span class="text-indigo-600"></span></h1>
+            <h1 class="font-bold text-xl tracking-tight text-emerald-950">Grand<span class="text-amber-600">Admin</span></h1>
         </div>
 
-        <div class="flex items-center gap-4">
-            <button class="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-bell"></i>
-            </button>
-            <div class="h-8 w-[1px] bg-slate-200"></div>
-            <a href="/admin/masters"
-                class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors">
-                <span>Admins</span>
-                <i class="fa-solid fa-user-gear"></i>
+        <nav class="flex-1 p-4 space-y-1.5">
+            <p class="px-4 text-[10px] font-bold text-emerald-800/40 uppercase tracking-[0.2em] mb-3">Management</p>
+            
+            <a href="/admin" class="flex items-center gap-3 px-4 py-3 text-sm font-bold active-nav transition-all">
+                <i class="fa-solid fa-grip"></i> Dashboard
             </a>
-            <div class="h-8 w-[1px] bg-slate-200"></div>
-            <a href="/logout"
-                class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors">
-                <span>Logout</span>
-                <i class="fa-solid fa-right-from-bracket"></i>
+
+            <a href="/admin/masters" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-900/60 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-xl transition-all">
+                <i class="fa-solid fa-shield-halved"></i> Administrators
             </a>
-        </div>
 
-    </nav>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-900/60 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-xl transition-all">
+                <i class="fa-solid fa-id-card-clip"></i> Staff Directory
+            </a>
 
-    <main class="p-8 max-w-6xl mx-auto space-y-8">
+            <div class="pt-6 mt-6 border-t border-emerald-50">
+                <p class="px-4 text-[10px] font-bold text-emerald-800/40 uppercase tracking-[0.2em] mb-3">System</p>
+                <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                </a>
+            </div>
+        </nav>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Today's Presence</p>
-                    <p class="text-3xl font-bold mt-1 text-emerald-600">{{ stats.today_attendance }}</p>
+        <div class="p-4 bg-emerald-950 text-white m-4 rounded-2xl shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full border-2 border-amber-500/50 p-0.5">
+                    <div class="h-full w-full rounded-full bg-emerald-800 flex items-center justify-center text-amber-500 font-bold text-xs">SA</div>
                 </div>
-                <div class="text-emerald-500"><i class="fa-solid fa-calendar-check text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Total Staff</p>
-                    <p class="text-3xl font-bold mt-1">{{ stats.total_employees }}</p>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold truncate">System Administrator</p>
+                    <p class="text-[10px] text-emerald-400">Master Access</p>
                 </div>
-                <div class="text-indigo-500"><i class="fa-solid fa-user-group text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Permanent Staff</p>
-                    <p class="text-3xl font-bold mt-1 text-emerald-500">{{ stats.permanent }}</p>
-                </div>
-                <div class="text-emerald-500"><i class="fa-solid fa-user text-2xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase">Casual Staff</p>
-                    <p class="text-3xl font-bold mt-1 text-emerald-500">{{ stats.casuals }}</p>
-                </div>
-                <div class="text-emerald-500"><i class="fa-solid fa-circle-check text-2xl"></i></div>
             </div>
         </div>
+    </aside>
 
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-            <div class="mb-6">
-                <h3 class="text-lg font-bold text-slate-800">Reports Engine</h3>
-                <p class="text-sm text-slate-500">Select custom ranges to analyze staff performance.</p>
+    <div class="flex-1 ml-64">
+        
+        <header class="h-20 bg-white/70 backdrop-blur-xl sticky top-0 z-10 border-b border-emerald-50 px-8 flex justify-between items-center">
+            <div>
+                <h2 class="font-bold text-emerald-950 text-xl">Attendance Analytics</h2>
+                <p class="text-xs text-emerald-700/60">Real-time presence monitoring system</p>
             </div>
-
-            <form id="reportForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Start Date</label>
-                    <input type="date" name="start_date" required
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">End Date</label>
-                    <input type="date" name="end_date" required
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                </div>
-
-                <button type="submit"
-                    class="bg-slate-900 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-all shadow-md active:scale-95">
-                    <i class="fa-solid fa-magnifying-glass mr-2 text-sm"></i> Generate
+            
+            <div class="flex items-center gap-4">
+                <button class="relative h-10 w-10 flex items-center justify-center rounded-xl border border-emerald-100 text-emerald-800 hover:bg-emerald-50 transition-colors">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="absolute top-2.5 right-2.5 h-2 w-2 bg-amber-500 rounded-full border-2 border-white"></span>
                 </button>
+            </div>
+        </header>
 
-                <button type="button" id="exportBtn"
-                    class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
-                </button>
-            </form>
-        </div>
+        <main class="p-8 max-w-7xl mx-auto space-y-8">
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50/50 border-b border-slate-100">
-                    <tr>
-                        <th class="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Staff PF Number
-                        </th>
-                        <th class="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Days Present
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="reportBody" class="divide-y divide-slate-50">
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td colspan="3" class="px-8 py-12 text-center">
-                            <div class="flex flex-col items-center gap-2 text-slate-400">
-                                <i class="fa-solid fa-inbox text-4xl mb-2 opacity-20"></i>
-                                <p>No data loaded for this range</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-1 rounded-3xl shadow-sm border border-emerald-100 hover:shadow-xl hover:shadow-emerald-900/5 transition-all group overflow-hidden">
+                    <div class="emerald-soft-gradient p-5 rounded-[1.4rem] h-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-emerald-100 text-emerald-700 rounded-lg group-hover:bg-emerald-700 group-hover:text-white transition-colors">
+                                <i class="fa-solid fa-calendar-check text-lg"></i>
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">TODAY</span>
+                        </div>
+                        <p class="text-emerald-900/60 text-[10px] font-bold uppercase tracking-wider">Attendance</p>
+                        <p class="text-3xl font-black mt-1 text-emerald-950">{{ stats.today_attendance }}</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 hover:shadow-lg transition-all">
+                    <div class="p-2 w-fit bg-amber-50 text-amber-600 rounded-lg mb-4"><i class="fa-solid fa-users text-lg"></i></div>
+                    <p class="text-emerald-900/60 text-[10px] font-bold uppercase tracking-wider">Total Staff</p>
+                    <p class="text-3xl font-black mt-1 text-emerald-950">{{ stats.total_employees }}</p>
+                </div>
 
-    </main>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 hover:shadow-lg transition-all">
+                    <div class="p-2 w-fit bg-emerald-50 text-emerald-600 rounded-lg mb-4"><i class="fa-solid fa-user-check text-lg"></i></div>
+                    <p class="text-emerald-900/60 text-[10px] font-bold uppercase tracking-wider">Permanent</p>
+                    <p class="text-3xl font-black mt-1 text-emerald-950">{{ (stats.permanent/stats.total_employees * 100) | round(1) }}%</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 hover:shadow-lg transition-all">
+                    <div class="p-2 w-fit bg-slate-50 text-slate-600 rounded-lg mb-4"><i class="fa-solid fa-clock-rotate-left text-lg"></i></div>
+                    <p class="text-emerald-900/60 text-[10px] font-bold uppercase tracking-wider">Casuals</p>
+                    <p class="text-3xl font-black mt-1 text-emerald-950">{{ (stats.casuals/stats.total_employees * 100) | round(1) }}%</p>
+                </div>
+            </div>
+
+            <div class="bg-emerald-950 p-8 rounded-[2.5rem] shadow-2xl shadow-emerald-950/20 text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                
+                <div class="relative z-10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-white" id="reportTitle">Intelligent Reports</h3>
+                            <p class="text-sm text-emerald-300/60 font-medium">Configure date parameters for deep-dive analysis</p>
+                        </div>
+                        <button id="exportBtn" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-file-export text-amber-500"></i> Export Dataset
+                        </button>
+                    </div>
+
+                    <form id="reportForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest ml-1">Period Start</label>
+                            <input type="date" name="start_date" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white focus:ring-2 focus:ring-amber-500 outline-none transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest ml-1">Period End</label>
+                            <input type="date" name="end_date" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white focus:ring-2 focus:ring-amber-500 outline-none transition-all">
+                        </div>
+                        <button type="submit" class="gold-gradient hover:brightness-110 text-white font-bold py-3.5 rounded-2xl transition-all shadow-xl shadow-amber-600/20 active:scale-[0.98]">
+                            <i class="fa-solid fa-bolt mr-2"></i> Fetch Records
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2rem] shadow-sm border border-emerald-100 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-emerald-50/50 border-b border-emerald-100">
+                        <tr>
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-widest">Employee PF</th>
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-widest">Staff Name</th>
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-widest">Department</th>
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-widest">Arrival</th>
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-widest text-right">Departure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody" class="divide-y divide-emerald-50">
+                        </tbody>
+                </table>
+
+                <div class="px-8 py-6 bg-emerald-50/30 flex items-center justify-between">
+                    <p class="text-xs font-medium text-emerald-900/50">
+                        Showing <span id="startRange" class="text-emerald-900 font-bold">0</span> - <span id="endRange" class="text-emerald-900 font-bold">0</span> of <span id="totalRecords" class="text-emerald-900 font-bold">0</span>
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="changePage(-1)" id="prevBtn" class="h-10 px-4 text-xs font-bold text-emerald-900 bg-white border border-emerald-100 rounded-xl hover:bg-emerald-50 disabled:opacity-30 transition-all">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button onclick="changePage(1)" id="nextBtn" class="h-10 px-4 text-xs font-bold text-white emerald-950 bg-emerald-900 rounded-xl hover:bg-emerald-800 disabled:opacity-30 transition-all shadow-md">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/static/js/reports.js"></script>
 </body>
-<script src="/static/js/reports.js"></script>
 
 </html>

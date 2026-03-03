@@ -82,7 +82,7 @@ async def logout(request: Request):
 
 @router.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
-
+    # 1. Fetch the missing data
     with engine.connect() as connection:
         stats = connection.execute(text("""
             SELECT 
@@ -93,7 +93,6 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
         """)).mappings().one()
 
     response = templates.TemplateResponse(
-        
         "admin.html",
         {
             "request": request,

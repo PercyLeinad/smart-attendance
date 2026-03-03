@@ -1,5 +1,4 @@
-// let IP = 'http://172.20.93.21:8000'; // Change to your backend URL if different
-let IP = 'http://10.10.10.199:8000'; // Change to your backend URL if different
+const BASE_URL = window.location.origin; // Automatically set to current origin
 
 window.addEventListener("pageshow", function (event) {
     if (event.persisted) {
@@ -59,31 +58,40 @@ function startClock() {
 }
 
 async function submitAttendance(confirm = false) {
-    const staffId = document.getElementById('staffId').value.trim();
+    const staffIdInput = document.getElementById('staffId');
+    const staffId = staffIdInput.value.trim();
     const msg = document.getElementById('message');
+    const btn = document.getElementById('btn');
+    const icon = document.getElementById('main-icon-fa');
     const token = new URLSearchParams(window.location.search).get('token');
 
     msg.innerText = "";
     msg.classList.remove('text-red-500', 'text-green-500');
 
     if (!staffId) {
-        msg.innerText = "⚠️ ID Required";
+        msg.innerText = "⚠️ ID Number Required";
+        msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-amber-600 bg-amber-50";
         return;
     }
 
     try {
-        const response = await fetch(`${IP}/check-in`, {
+        const response = await fetch(`${BASE_URL}/check-in`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 staff_id: staffId,
                 token: token,
+<<<<<<< HEAD
                 confirm: confirm
+=======
+                confirm: confirm 
+>>>>>>> develop
             })
         });
 
         const result = await response.json();
 
+<<<<<<< HEAD
         // ✅ HANDLE FASTAPI ERRORS FIRST
         if (!response.ok) {
             msg.innerText = `❌ ${result.detail || "Request failed"}`;
@@ -95,12 +103,26 @@ async function submitAttendance(confirm = false) {
         if (result.status === "confirm_checkout") {
             document.getElementById('confirmText').innerText =
                 "Already signed in.\nWish to Sign out and proceed?";
+=======
+        // --- ERROR HANDLING (400, 404, etc.) ---
+        if (!response.ok) {
+            msg.innerText = `❌ ${result.detail || "Error occurred"}`;
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-red-600 bg-red-50 border border-red-100";
+            if(icon) icon.className = "fa-solid fa-circle-exclamation text-3xl text-red-500";
+            return; // Stop execution here
+        }
+
+        // --- SUCCESS SCENARIOS ---
+        if (result.status === "confirm_checkout") {
+            document.getElementById('confirmText').innerText = `Staff: ${result.staff}\nAlready signed in. Wish to Sign out?`;
+>>>>>>> develop
             const modal = document.getElementById('confirmModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             return;
         }
 
+<<<<<<< HEAD
         // 🟢 Success Scenarios
         if (result.status === "checked_in") {
             msg.innerText = `✅ Welcome, ${result.staff}!`;
@@ -116,12 +138,35 @@ async function submitAttendance(confirm = false) {
         btn.style.display = 'none';
         document.getElementById('staffId').style.display = 'none';
 
+=======
+        if (result.status === "checked_in") {
+            msg.innerText = `✅ Welcome, ${result.staff}!`;
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-emerald-700 bg-emerald-100";
+            if(icon) icon.className = "fa-solid fa-check-double text-3xl text-emerald-600";
+        } else if (result.status === "checked_out") {
+            msg.innerText = `👋 Goodbye, ${result.staff}!`;
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-amber-700 bg-amber-100";
+            if(icon) icon.className = "fa-solid fa-door-open text-3xl text-amber-600";
+        } else if (result.status === "completed") {
+            msg.innerText = "🚫 Attendance already completed today";
+            msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-slate-600 bg-slate-100";
+        }
+        
+        // Hide inputs on success
+        if(btn) btn.style.display = 'none';
+        staffIdInput.style.display = 'none';
+        
+>>>>>>> develop
         closeModal();
         startResetTimer();
 
     } catch (err) {
         msg.innerText = "📡 Connection Error";
+<<<<<<< HEAD
         msg.classList.add('text-red-500');
+=======
+        msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-red-600 bg-red-50";
+>>>>>>> develop
         console.error(err);
     }
 }
