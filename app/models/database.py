@@ -66,7 +66,12 @@ class Employee(Base):
         nullable=False,
         index=True
     )
-
+    email: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=True,
+        index=True
+    )
     department_code: Mapped[Optional[str]] = mapped_column(
         ForeignKey("departments.code", ondelete="SET NULL"),
         nullable=True,
@@ -137,6 +142,12 @@ class Master(Base):
         String(50),
         unique=True,
         nullable=False,
+        index=True
+    )
+    email: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=True,
         index=True
     )
 
