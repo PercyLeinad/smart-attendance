@@ -26,44 +26,6 @@
 
 <body class="bg-[#f0f4f1] min-h-screen">
 
-<<<<<<< HEAD
-<main class="p-6 md:p-10 max-w-5xl mx-auto">
-
-    <!-- Header -->
-    <div class="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-
-        <div>
-            <a href="/admin"
-                class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 transition">
-                <i class="fa-solid fa-arrow-left"></i>
-                Back to Dashboard
-            </a>
-
-            <h1 class="text-3xl font-bold text-slate-800 mt-3">
-                Administrators
-            </h1>
-            <p class="text-slate-500 text-sm mt-1">
-                Manage administrators
-            </p>
-        </div>
-
-        <button onclick="toggleModal(true)"
-            class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg flex items-center gap-2 w-fit">
-            <i class="fa-solid fa-plus text-sm"></i>
-            Add Administrator
-        </button>
-
-    </div>
-
-
-    <!-- Table Card -->
-    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-
-        {% if not admins or admins|length == 0 %}
-        <div class="p-16 text-center">
-            <div class="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-indigo-50 text-indigo-600 mb-4">
-                <i class="fa-solid fa-user-shield text-2xl"></i>
-=======
     <main class="p-6 md:p-10 max-w-5xl mx-auto">
 
         <div class="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
@@ -92,7 +54,6 @@
                 </div>
                 <p class="font-bold text-emerald-950 text-xl">No Administrators Found</p>
                 <p class="text-emerald-600/60 text-sm mt-2">The registry is currently empty.</p>
->>>>>>> develop
             </div>
             <h3 class="text-lg font-semibold text-slate-700">
                 No administrators yet
@@ -103,38 +64,6 @@
         </div>
         {% else %}
 
-<<<<<<< HEAD
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider sticky top-0">
-                    <tr>
-                        <th class="px-8 py-5">Administrator</th>
-                        <th class="px-8 py-5">Date Created</th>
-                        <th class="px-8 py-5 text-right">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-slate-100">
-                    {% for master in admins %}
-                    <tr class="hover:bg-slate-50/70 transition duration-200">
-
-                        <!-- User -->
-                        <td class="px-8 py-6">
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="h-11 w-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
-                                    <i class="fa-solid fa-user-gear"></i>
-                                </div>
-
-                                <div>
-                                    <p class="font-semibold text-slate-800">
-                                        {{ master.username }}
-                                    </p>
-                                    <span
-                                        class="inline-block mt-1 text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">
-                                        Active
-                                    </span>
-=======
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -159,7 +88,6 @@
                                         </span>
                                         <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">Add email here</span>
                                     </div>
->>>>>>> develop
                                 </div>
                             </div>
                         </td>
@@ -173,28 +101,6 @@
                         <td class="px-8 py-6 text-right">
                             <div class="flex justify-end gap-3">
 
-<<<<<<< HEAD
-                                <button onclick="openChangePasswordModal('{{ master.username }}')"
-                                    class="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 transition">
-                                    <i class="fa-solid fa-key text-sm"></i>
-                                </button>
-
-                                <form action="/admin/masters/delete/{{ master.username }}" method="POST"
-                                    onsubmit="return confirm('Revoke access for this user?');">
-                                    <button type="submit"
-                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition">
-                                        <i class="fa-solid fa-user-minus text-sm"></i>
-                                    </button>
-                                </form>
-
-                            </div>
-                        </td>
-
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-=======
                             <td class="px-8 py-5 text-sm font-medium text-emerald-800/60">
                                 <i class="fa-regular fa-calendar-check mr-2"></i>
                                 {{ master.CreationDate }}
@@ -224,7 +130,6 @@
                 </table>
             </div>
             {% endif %}
->>>>>>> develop
         </div>
 
         {% endif %}

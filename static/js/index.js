@@ -81,29 +81,12 @@ async function submitAttendance(confirm = false) {
             body: JSON.stringify({
                 staff_id: staffId,
                 token: token,
-<<<<<<< HEAD
-                confirm: confirm
-=======
                 confirm: confirm 
->>>>>>> develop
             })
         });
 
         const result = await response.json();
 
-<<<<<<< HEAD
-        // ✅ HANDLE FASTAPI ERRORS FIRST
-        if (!response.ok) {
-            msg.innerText = `❌ ${result.detail || "Request failed"}`;
-            msg.classList.add('text-red-500');
-            return;
-        }
-
-        // 🔵 Scenario: Show confirmation modal
-        if (result.status === "confirm_checkout") {
-            document.getElementById('confirmText').innerText =
-                "Already signed in.\nWish to Sign out and proceed?";
-=======
         // --- ERROR HANDLING (400, 404, etc.) ---
         if (!response.ok) {
             msg.innerText = `❌ ${result.detail || "Error occurred"}`;
@@ -115,30 +98,12 @@ async function submitAttendance(confirm = false) {
         // --- SUCCESS SCENARIOS ---
         if (result.status === "confirm_checkout") {
             document.getElementById('confirmText').innerText = `Staff: ${result.staff}\nAlready signed in. Wish to Sign out?`;
->>>>>>> develop
             const modal = document.getElementById('confirmModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             return;
         }
 
-<<<<<<< HEAD
-        // 🟢 Success Scenarios
-        if (result.status === "checked_in") {
-            msg.innerText = `✅ Welcome, ${result.staff}!`;
-            msg.classList.add('text-green-500');
-        } else if (result.status === "checked_out") {
-            msg.innerText = `👋 Goodbye, ${result.staff}!`;
-            msg.classList.add('text-green-500');
-        } else if (result.status === "completed") {
-            msg.innerText = "🚫 Attendance already completed today";
-            msg.classList.add('text-red-500');
-        }
-
-        btn.style.display = 'none';
-        document.getElementById('staffId').style.display = 'none';
-
-=======
         if (result.status === "checked_in") {
             msg.innerText = `✅ Welcome, ${result.staff}!`;
             msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-emerald-700 bg-emerald-100";
@@ -156,17 +121,12 @@ async function submitAttendance(confirm = false) {
         if(btn) btn.style.display = 'none';
         staffIdInput.style.display = 'none';
         
->>>>>>> develop
         closeModal();
         startResetTimer();
 
     } catch (err) {
         msg.innerText = "📡 Connection Error";
-<<<<<<< HEAD
-        msg.classList.add('text-red-500');
-=======
         msg.className = "mt-6 text-sm font-bold min-h-[3rem] flex items-center justify-center px-4 rounded-xl text-red-600 bg-red-50";
->>>>>>> develop
         console.error(err);
     }
 }
