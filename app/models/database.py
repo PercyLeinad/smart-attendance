@@ -27,13 +27,19 @@ class Base(DeclarativeBase):
 class Department(Base):
     __tablename__ = "departments"
 
-    code: Mapped[str] = mapped_column(String(20), primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    code: Mapped[str] = mapped_column(
+        String(20),
+        primary_key=True
+    )
 
-    # Relationships
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        unique=True
+    )
+
     employees: Mapped[List["Employee"]] = relationship(
-        back_populates="department",
-        cascade="all, delete-orphan"
+        back_populates="department"
     )
 
 
@@ -44,35 +50,36 @@ class Department(Base):
 class Employee(Base):
     __tablename__ = "employees"
 
-    pf: Mapped[str] = mapped_column(String(20), primary_key=True)
-    
-    id_number: Mapped[Optional[str]] = mapped_column(
+    pf: Mapped[str] = mapped_column(
         String(20),
-        unique=True
+        primary_key=True
     )
 
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    id_number: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        unique=True,
+        nullable=True
+    )
 
-    department_code: Mapped[Optional[str]] = mapped_column(
-        ForeignKey("departments.code", ondelete="CASCADE"),
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
         index=True
     )
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc)
+    department_code: Mapped[Optional[str]] = mapped_column(
+        ForeignKey("departments.code", ondelete="SET NULL"),
+        nullable=True,
+        index=True
     )
 
-    # Relationships
-    department: Mapped["Department"] = relationship(
+    department: Mapped[Optional["Department"]] = relationship(
         back_populates="employees"
     )
 
     logs: Mapped[List["AttendanceLog"]] = relationship(
-        back_populates="employee",
-        cascade="all, delete-orphan"
+        back_populates="employee"
     )
-
 
 # ---------------------------------------------------
 # Attendance Log Model
@@ -83,18 +90,13 @@ class AttendanceLog(Base):
 
     __table_args__ = (
         UniqueConstraint("pf", "date_only", name="uq_pf_date"),
-        Index("ix_attendance_pf_date", "pf", "date_only"),
-    )
-
-    id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True,
-        autoincrement=True
+        Index("ix_pf_date", "pf", "date_only"),
+        Index("ix_date_only", "date_only"),
     )
 
     pf: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("employees.pf", ondelete="CASCADE"),
+        ForeignKey("employees.pf"),
         nullable=False
     )
 
@@ -104,16 +106,15 @@ class AttendanceLog(Base):
         nullable=False
     )
 
+    checkout_time: Mapped[Optional[datetime]] = mapped_column(
+        DateTime
+    )
+
     date_only: Mapped[date] = mapped_column(
         Date,
         nullable=False
     )
 
-    checkout_time: Mapped[Optional[datetime]] = mapped_column(
-        DateTime
-    )
-
-    # Relationship
     employee: Mapped["Employee"] = relationship(
         back_populates="logs"
     )
@@ -135,7 +136,8 @@ class Master(Base):
     username: Mapped[str] = mapped_column(
         String(50),
         unique=True,
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     password: Mapped[str] = mapped_column(
@@ -145,5 +147,10 @@ class Master(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=lambda: datetime.now(timezone.utc)
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+    employee: Mapped["Employee"] = relationship(
+        back_populates="logs"
     )
