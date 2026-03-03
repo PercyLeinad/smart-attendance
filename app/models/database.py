@@ -98,6 +98,11 @@ class AttendanceLog(Base):
         Index("ix_pf_date", "pf", "date_only"),
         Index("ix_date_only", "date_only"),
     )
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
 
     pf: Mapped[str] = mapped_column(
         String(20),
