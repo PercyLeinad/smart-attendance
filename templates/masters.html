@@ -45,95 +45,94 @@
             </button>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-emerald-100 overflow-hidden">
+ <div class="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-emerald-100 overflow-hidden">
 
-            {% if not admins or admins|length == 0 %}
-            <div class="p-20 text-center">
-                <div class="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-user-shield text-3xl text-emerald-200"></i>
-                </div>
-                <p class="font-bold text-emerald-950 text-xl">No Administrators Found</p>
-                <p class="text-emerald-600/60 text-sm mt-2">The registry is currently empty.</p>
-            </div>
-            <h3 class="text-lg font-semibold text-slate-700">
-                No administrators yet
-            </h3>
-            <p class="text-sm text-slate-500 mt-1">
-                Click "Add Administrator" to create the first one.
-            </p>
+    {% if not admins or admins|length == 0 %}
+    <!-- EMPTY STATE -->
+    <div class="p-20 text-center">
+        <div class="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-user-shield text-3xl text-emerald-200"></i>
         </div>
-        {% else %}
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-emerald-50/50">
-                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">Administrator</th>
-                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">Enrolled On</th>
-                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em] text-right">Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody class="divide-y divide-emerald-50">
-                        {% for master in admins %}
-                        <tr class="hover:bg-emerald-50/30 transition-all group">
-                            <td class="px-8 py-5">
-                                <div class="flex items-center gap-4">
-                                    <div class="h-11 w-11 rounded-2xl must-green-gradient text-amber-400 flex items-center justify-center shadow-lg shadow-emerald-900/20 group-hover:scale-110 transition-transform">
-                                        <i class="fa-solid fa-shield-check"></i>
-                                    </div>
-                                    <div>
-                                        <span class="block font-bold text-emerald-950 text-lg leading-none">
-                                            {{ master.username }}
-                                        </span>
-                                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">Add email here</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-
-                        <!-- Date -->
-                        <td class="px-8 py-6 text-sm text-slate-500">
-                            {{ master.CreationDate }}
-                        </td>
-
-                        <!-- Actions -->
-                        <td class="px-8 py-6 text-right">
-                            <div class="flex justify-end gap-3">
-
-                            <td class="px-8 py-5 text-sm font-medium text-emerald-800/60">
-                                <i class="fa-regular fa-calendar-check mr-2"></i>
-                                {{ master.CreationDate }}
-                            </td>
-
-                            <td class="px-8 py-5 text-right">
-                                <div class="flex justify-end gap-3">
-                                    <button onclick="openChangePasswordModal('{{ master.username }}')"
-                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all"
-                                        title="Reset Password">
-                                        <i class="fa-solid fa-key"></i>
-                                    </button>
-
-                                    <form action="/admin/masters/delete/{{ master.username }}" method="POST"
-                                        onsubmit="return confirm('Revoke all access for {{ master.username }}?');" class="inline">
-                                        <button type="submit"
-                                            class="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                                            title="Delete Account">
-                                            <i class="fa-solid fa-user-xmark"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-        </div>
-
-        {% endif %}
+        <p class="font-bold text-emerald-950 text-xl">No Administrators Found</p>
+        <p class="text-emerald-600/60 text-sm mt-2">The registry is currently empty.</p>
     </div>
+
+    {% else %}
+    <!-- TABLE -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-emerald-50/50">
+                    <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">
+                        Administrator
+                    </th>
+                    <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">
+                        Enrolled On
+                    </th>
+                    <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em] text-right">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-emerald-50">
+                {% for master in admins %}
+                <tr class="hover:bg-emerald-50/30 transition-all group">
+
+                    <!-- ADMIN COLUMN -->
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-4">
+                            <div class="h-11 w-11 rounded-2xl must-green-gradient text-amber-400 flex items-center justify-center shadow-lg shadow-emerald-900/20 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-shield-check"></i>
+                            </div>
+                            <div>
+                                <span class="block font-bold text-emerald-950 text-lg leading-none">
+                                    {{ master.username }}
+                                </span>
+                                <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">
+                                    Add email here
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- DATE COLUMN -->
+                    <td class="px-8 py-5 text-sm font-medium text-emerald-800/60">
+                        <i class="fa-regular fa-calendar-check mr-2"></i>
+                        {{ master.CreationDate }}
+                    </td>
+
+                    <!-- ACTIONS COLUMN -->
+                    <td class="px-8 py-5 text-right">
+                        <div class="flex justify-end gap-3">
+
+                            <button onclick="openChangePasswordModal('{{ master.username }}')"
+                                class="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all"
+                                title="Reset Password">
+                                <i class="fa-solid fa-key"></i>
+                            </button>
+
+                            <form action="/admin/masters/delete/{{ master.username }}" method="POST"
+                                onsubmit="return confirm('Revoke all access for {{ master.username }}?');"
+                                class="inline">
+                                <button type="submit"
+                                    class="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                                    title="Delete Account">
+                                    <i class="fa-solid fa-user-xmark"></i>
+                                </button>
+                            </form>
+
+                        </div>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
 
 </main>
 
