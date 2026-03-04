@@ -166,7 +166,3 @@ class Master(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-
-    employee: Mapped["Employee"] = relationship(
-        back_populates="logs"
-    )
