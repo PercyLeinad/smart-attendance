@@ -113,7 +113,7 @@ async def masters_page(request: Request, admin: str = Depends(is_admin)):
     with engine.connect() as conn:
         # We don't select the password for the UI
         admins = conn.execute(
-            text("SELECT username,created_at FROM masters ORDER BY created_at DESC")
+            text("SELECT username,created_at,email FROM masters ORDER BY created_at DESC")
         ).mappings().all()
     
     return templates.TemplateResponse("masters.html", {
