@@ -34,7 +34,7 @@ class Department(Base):
 
     name: Mapped[str] = mapped_column(
         String(100),
-        nullable=False,
+        nullable=True,
         unique=True
     )
 
