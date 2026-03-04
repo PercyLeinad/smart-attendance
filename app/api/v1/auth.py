@@ -113,7 +113,7 @@ async def masters_page(request: Request, admin: str = Depends(is_admin)):
     with engine.connect() as conn:
         # We don't select the password for the UI
         admins = conn.execute(
-            text("SELECT username,CreationDate FROM masters ORDER BY CreationDate DESC")
+            text("SELECT username,created_at FROM masters ORDER BY created_at DESC")
         ).mappings().all()
     
     return templates.TemplateResponse("masters.html", {
@@ -200,7 +200,7 @@ async def change_password(
     
     if error:
         with engine.connect() as conn:
-            admins = conn.execute(text("SELECT username, CreationDate FROM masters")).fetchall()
+            admins = conn.execute(text("SELECT username, created_at FROM masters")).fetchall()
         return templates.TemplateResponse("masters.html", {
             "request": request, 
             "admins": admins, 
