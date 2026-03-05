@@ -54,3 +54,31 @@ setInterval(() => {
 
 // Initial load
 updateQR();
+
+
+// 1. Keyboard Shortcut: Escape key to go home
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        window.location.href = '/';
+    }
+});
+
+// 2. Auto-Timeout: Redirect to home after 45 seconds of inactivity
+// This resets whenever the user moves the mouse or touches the screen
+let idleTimer;
+
+const resetTimer = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+        window.location.href = '/';
+    }, 45000); // 45000ms = 45 seconds
+};
+
+// Listen for user interaction to reset the idle clock
+window.addEventListener('mousemove', resetTimer);
+window.addEventListener('mousedown', resetTimer);
+window.addEventListener('keypress', resetTimer);
+window.addEventListener('touchstart', resetTimer);
+
+// Initialize the timer on page load
+resetTimer();
