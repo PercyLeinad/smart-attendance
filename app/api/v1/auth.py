@@ -113,7 +113,7 @@ async def masters_page(request: Request, admin: str = Depends(is_admin)):
     with engine.connect() as conn:
         # We don't select the password for the UI
         admins = conn.execute(
-            text("SELECT username,created_at,email FROM masters ORDER BY created_at DESC")
+            text("SELECT username,created_at,email FROM masters ORDER BY created_at ASC")
         ).mappings().all()
     
     return templates.TemplateResponse("masters.html", {
@@ -126,6 +126,7 @@ async def masters_page(request: Request, admin: str = Depends(is_admin)):
 async def add_master(
     request: Request, # You need the request object for templates
     username: str = Form(...),
+    email: str = Form(...),
     password: str = Form(...),
     admin: str = Depends(is_admin),
 ):
@@ -151,15 +152,15 @@ async def add_master(
     try:
         with engine.begin() as conn:
             conn.execute(
-                text("INSERT INTO masters (username, password) VALUES (:u, :p)"),
-                {"u": username, "p": hashed_password}
+                text("INSERT INTO masters (username, email, password) VALUES (:u, :e, :p)"),
+                {"u": username, "e": email, "p": hashed_password}
             )
         return RedirectResponse(url="/admin/masters", status_code=303)
 
-    except Exception:
+    except Exception as e:
         return templates.TemplateResponse(
             "masters.html", 
-            {"request": request, "error": "Username already exists.", "username": username}
+            {"request": request, "error": str(e), "username": username, "email": email }
         )
 
 # 3. Delete Admin
