@@ -9,14 +9,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
         .must-green-gradient {
             background: linear-gradient(135deg, #065f46 0%, #064e3b 100%);
         }
+
         .must-gold-gradient {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -30,12 +35,15 @@
 
         <div class="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
-                <a href="/admin" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-widest hover:text-amber-600 transition-colors mb-2">
+                <a href="/admin"
+                    class="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-widest hover:text-amber-600 transition-colors mb-2">
                     <i class="fa-solid fa-arrow-left"></i>
                     Back to Dashboard
                 </a>
-                <h1 class="text-3xl font-black text-emerald-950">System <span class="text-amber-600">Administrators</span></h1>
-                <p class="text-emerald-800/60 text-sm mt-1">Manage institutional access control and security credentials.</p>
+                <h1 class="text-3xl font-black text-emerald-950">System <span
+                        class="text-amber-600">Administrators</span></h1>
+                <p class="text-emerald-800/60 text-sm mt-1">Manage institutional access control and security
+                    credentials.</p>
             </div>
 
             <button onclick="toggleModal(true)"
@@ -45,113 +53,125 @@
             </button>
         </div>
 
- <div class="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-emerald-100 overflow-hidden">
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-emerald-100 overflow-hidden">
 
-    {% if not admins or admins|length == 0 %}
-    <!-- EMPTY STATE -->
-    <div class="p-20 text-center">
-        <div class="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-user-shield text-3xl text-emerald-200"></i>
-        </div>
-        <p class="font-bold text-emerald-950 text-xl">No Administrators Found</p>
-        <p class="text-emerald-600/60 text-sm mt-2">The registry is currently empty.</p>
-    </div>
+            {% if not admins or admins|length == 0 %}
+            <!-- EMPTY STATE -->
+            <div class="p-20 text-center">
+                <div class="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-user-shield text-3xl text-emerald-200"></i>
+                </div>
+                <p class="font-bold text-emerald-950 text-xl">No Administrators Found</p>
+                <p class="text-emerald-600/60 text-sm mt-2">The registry is currently empty.</p>
+            </div>
 
-    {% else %}
-    <!-- TABLE -->
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-emerald-50/50">
-                    <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">
-                        Administrator
-                    </th>
-                    <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">
-                        Enrolled On
-                    </th>
-                    <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em] text-right">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
+            {% else %}
+            <!-- TABLE -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-emerald-50/50">
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">
+                                Administrator
+                            </th>
+                            <th class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em]">
+                                Enrolled On
+                            </th>
+                            <th
+                                class="px-8 py-5 text-[10px] font-bold text-emerald-900 uppercase tracking-[0.2em] text-right">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
 
-            <tbody class="divide-y divide-emerald-50">
-                {% for master in admins %}
-                <tr class="hover:bg-emerald-50/30 transition-all group">
+                    <tbody class="divide-y divide-emerald-50">
+                        {% for master in admins %}
+                        <tr class="hover:bg-emerald-50/30 transition-all group">
 
-                    <!-- ADMIN COLUMN -->
-                    <td class="px-8 py-5">
-                        <div class="flex items-center gap-4">
-                            <div class="h-11 w-11 rounded-2xl must-green-gradient text-amber-400 flex items-center justify-center shadow-lg shadow-emerald-900/20 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-shield-check"></i>
-                            </div>
-                            <div>
-                                <span class="block font-bold text-emerald-950 text-lg leading-none">
-                                    {{ master.username }}
-                                </span>
-                                <span class="text-[10px] font-bold text-emerald-500 lowercase tracking-tighter">
+                            <!-- ADMIN COLUMN -->
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="h-11 w-11 rounded-2xl must-gold-gradient text-amber-400 flex items-center justify-center shadow-lg shadow-emerald-900/20 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-shield-check"></i>
+                                    </div>
+                                    <div>
+                                        <span class="block font-bold text-emerald-950 text-lg leading-none">
+                                            {{ master.username }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- EMAIL -->
+                            <td class="px-8 py-5 text-sm font-medium text-emerald-800/60">
+                                <a href="mailto:{{ master.email }}"
+                                    class="text-emerald-600 hover:text-emerald-900 transition-colors">
+                                    <i class="fa-regular fa-envelope mr-2"></i>
                                     {{ master.email }}
-                                </span>
-                            </div>
-                        </div>
-                    </td>
+                                </a>
+                            </td>
+                            <!-- DATE COLUMN -->
+                            <td class="px-8 py-5 text-sm font-bold text-emerald-800/60">
+                                <i class="fa-regular fa-calendar-check mr-2"></i>
+                                {{ master.created_at }}
+                            </td>
 
-                    <!-- DATE COLUMN -->
-                    <td class="px-8 py-5 text-sm font-medium text-emerald-800/60">
-                        <i class="fa-regular fa-calendar-check mr-2"></i>
-                        {{ master.CreationDate }}
-                    </td>
+                            <!-- ACTIONS COLUMN -->
+                            <td class="px-8 py-5 text-right">
+                                <div class="flex justify-end gap-3">
 
-                    <!-- ACTIONS COLUMN -->
-                    <td class="px-8 py-5 text-right">
-                        <div class="flex justify-end gap-3">
+                                    <button onclick="openChangePasswordModal('{{ master.username }}')"
+                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all"
+                                        title="Reset Password">
+                                        <i class="fa-solid fa-key"></i>
+                                    </button>
 
-                            <button onclick="openChangePasswordModal('{{ master.username }}')"
-                                class="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all"
-                                title="Reset Password">
-                                <i class="fa-solid fa-key"></i>
-                            </button>
+                                    <form action="/admin/masters/delete/{{ master.username }}" method="POST"
+                                        onsubmit="return confirm('Revoke all access for {{ master.username }}?');"
+                                        class="inline">
+                                        <button type="submit"
+                                            class="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                                            title="Delete Account">
+                                            <i class="fa-solid fa-user-xmark"></i>
+                                        </button>
+                                    </form>
 
-                            <form action="/admin/masters/delete/{{ master.username }}" method="POST"
-                                onsubmit="return confirm('Revoke all access for {{ master.username }}?');"
-                                class="inline">
-                                <button type="submit"
-                                    class="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                                    title="Delete Account">
-                                    <i class="fa-solid fa-user-xmark"></i>
-                                </button>
-                            </form>
+                                </div>
+                            </td>
 
-                        </div>
-                    </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
 
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+        </div>
 
-</div>
+    </main>
 
-</main>
-
-    <div id="adminModal" class="fixed inset-0 bg-emerald-950/60 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div id="modalContent" class="bg-white w-full max-w-md m-4 p-10 rounded-[2.5rem] shadow-2xl border border-emerald-100 relative transform scale-95 transition-all duration-300">
-            <button onclick="toggleModal(false)" class="absolute top-6 right-6 text-emerald-300 hover:text-emerald-950 transition-colors">
+    <div id="adminModal"
+        class="fixed inset-0 bg-emerald-950/60 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div id="modalContent"
+            class="bg-white w-full max-w-md m-4 p-10 rounded-[2.5rem] shadow-2xl border border-emerald-100 relative transform scale-95 transition-all duration-300">
+            <button onclick="toggleModal(false)"
+                class="absolute top-6 right-6 text-emerald-300 hover:text-emerald-950 transition-colors">
                 <i class="fa-solid fa-circle-xmark text-2xl"></i>
             </button>
 
             <div class="mb-8">
-                <div class="h-14 w-14 must-gold-gradient rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-amber-500/30 mb-4">
+                <div
+                    class="h-14 w-14 must-gold-gradient rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-amber-500/30 mb-4">
                     <i class="fa-solid fa-user-shield"></i>
                 </div>
-                <h3 class="font-black text-2xl text-emerald-950">Grant <span class="text-amber-600">Privileges</span></h3>
+                <h3 class="font-black text-2xl text-emerald-950">Grant <span class="text-amber-600">Privileges</span>
+                </h3>
                 <p class="text-emerald-600/60 text-sm font-medium">Define a new authority in the system.</p>
             </div>
 
             {% if error %}
-            <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold flex items-center gap-3 animate-bounce">
+            <div
+                class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold flex items-center gap-3 animate-bounce">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>{{ error }}</span>
             </div>
@@ -159,13 +179,22 @@
 
             <form action="/admin/masters/add" method="POST" class="space-y-6" autocomplete="off">
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">Unique Username</label>
-                    <input type="text" name="username" required autocomplete="new-username"
+                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">Unique
+                        Username</label>
+                    <input type="text" name="username" maxlength="15" autocomplete="new-username"
                         class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">Access Password</label>
+                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">
+                        Email</label>
+                    <input type="email" name="email" maxlength="40" autocomplete="email"
+                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">Access
+                        Password</label>
                     <input type="password" name="password" minlength="8" required autocomplete="new-password"
                         class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
                     <p class="text-[10px] text-emerald-400 font-bold ml-1">Security: Use 8+ characters with mixed cases.</p>
@@ -179,23 +208,31 @@
         </div>
     </div>
 
-    <div id="passwordModal" class="fixed inset-0 bg-emerald-950/60 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div id="passModalContent" class="bg-white w-full max-w-md m-4 p-10 rounded-[2.5rem] shadow-2xl relative transform scale-95 transition-all duration-300">
-            <button onclick="closePasswordModal()" class="absolute top-6 right-6 text-emerald-300 hover:text-emerald-950"><i class="fa-solid fa-circle-xmark text-2xl"></i></button>
+    <div id="passwordModal"
+        class="fixed inset-0 bg-emerald-950/60 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div id="passModalContent"
+            class="bg-white w-full max-w-md m-4 p-10 rounded-[2.5rem] shadow-2xl relative transform scale-95 transition-all duration-300">
+            <button onclick="closePasswordModal()"
+                class="absolute top-6 right-6 text-emerald-300 hover:text-emerald-950"><i
+                    class="fa-solid fa-circle-xmark text-2xl"></i></button>
 
             <div class="mb-8">
-                <div class="h-14 w-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 text-2xl mb-4">
+                <div
+                    class="h-14 w-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 text-2xl mb-4">
                     <i class="fa-solid fa-key"></i>
                 </div>
-                <h3 class="font-black text-2xl text-emerald-950">Credential <span class="text-amber-600">Reset</span></h3>
-                <p class="text-emerald-600/60 text-sm font-medium">Updating access for <span id="displayUser" class="text-emerald-950 font-black underline"></span></p>
+                <h3 class="font-black text-2xl text-emerald-950">Credential <span class="text-amber-600">Reset</span>
+                </h3>
+                <p class="text-emerald-600/60 text-sm font-medium">Updating access for <span id="displayUser"
+                        class="text-emerald-950 font-black underline"></span></p>
             </div>
 
             <form action="/admin/masters/change-password" method="POST" autocomplete="off" class="space-y-6">
                 <input type="hidden" name="username" id="targetUsername">
 
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">New Secure Password</label>
+                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">New
+                        Secure Password</label>
                     <input type="password" name="new_password" required minlength="8" autocomplete="new-password"
                         class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
                 </div>
@@ -257,4 +294,5 @@
         });
     </script>
 </body>
+
 </html>
