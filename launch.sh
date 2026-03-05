@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "Starting FastAPI..."
 
 # Activating env
