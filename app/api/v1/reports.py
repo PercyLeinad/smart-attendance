@@ -29,14 +29,9 @@ def export_data(
         query = text("""
             SELECT 
                 UPPER(e.pf) AS Pf,
-<<<<<<< HEAD
-                UPPER(e.department_code) AS "Department Code",
-                UPPER(d.name) AS Department,
-=======
                 UPPER(e.name) AS Name,
                 UPPER(d.code) AS "Department Code",
                 UPPER(d.name) AS "Department Name",
->>>>>>> develop
                 UPPER(a.arrival_time) AS Arrival,
                 UPPER(a.checkout_time) AS Checkout
             FROM attendance_logs AS a
