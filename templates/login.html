@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="shortcut icon" href="/static/assets/favicon.ico">
     <style>
-        .fade-out { transition: opacity 0.5s ease-out; opacity: 0; }
+        .fade-out {
+            transition: opacity 0.5s ease-out;
+            opacity: 0;
+        }
     </style>
 </head>
+
 <body class="bg-emerald-900 flex items-center justify-center h-screen px-4">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-amber-500">
         <div class="text-center mb-8">
@@ -19,11 +24,13 @@
 
         <div id="alert-container">
             {% if request.query_params.get('msg') == 'logged_out' %}
-            <div class="alert-box mb-6 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg text-center font-medium">
+            <div
+                class="alert-box mb-6 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg text-center font-medium">
                 Successfully logged out.
             </div>
             {% elif request.query_params.get('msg') == 'invalid_credentials' %}
-            <div class="alert-box mb-6 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg text-center font-medium">
+            <div
+                class="alert-box mb-6 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg text-center font-medium">
                 Invalid username or password.
             </div>
             {% endif %}
@@ -36,22 +43,51 @@
                     class="w-full px-4 py-3 rounded-lg border border-emerald-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition placeholder-emerald-100"
                     placeholder="Enter admin username">
             </div>
-            
-            <div>
+
+            <div class="relative">
                 <label class="block text-sm font-medium text-emerald-900 mb-1">Password</label>
-                <input type="password" name="password" required autocomplete="current-password"
-                    class="w-full px-4 py-3 rounded-lg border border-emerald-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition placeholder-emerald-100"
-                    placeholder="••••••••">
+
+                <input id="password" name="password" required autocomplete="current-password"
+                    class="w-full px-4 py-3 pr-12 rounded-lg border border-emerald-100 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition placeholder-emerald-100"
+                    placeholder="....................." type="password">
+
+                <button type="button" id="togglePassword"
+                    class="absolute right-3 top-[38px] text-emerald-600 hover:text-emerald-800">
+
+                    <!-- Eye (show) -->
+                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5
+           c4.477 0 8.268 2.943 9.542 7
+           -1.274 4.057-5.065 7-9.542 7
+           -4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+
+                    <!-- Eye Off (hide) -->
+                    <svg id="eyeOffIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19
+           c-4.478 0-8.268-2.943-9.542-7
+           a9.956 9.956 0 012.042-3.368M6.223 6.223
+           A9.956 9.956 0 0112 5c4.478 0 8.268 2.943
+           9.542 7a9.956 9.956 0 01-4.132 5.411M15 12
+           a3 3 0 11-6 0 3 3 0 016 0zm6 6L3 3" />
+                    </svg>
+                </button>
             </div>
 
-            <button type="submit" 
+            <button type="submit"
                 class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-lg transition-all active:scale-95 shadow-lg shadow-emerald-900/20">
                 Sign In
             </button>
         </form>
 
         <div class="mt-8 text-center border-t border-emerald-50 pt-6">
-            <a href="/display" class="text-xs text-emerald-400 hover:text-amber-600 font-bold transition uppercase tracking-widest">← Back to Staff Scanner</a>
+            <a href="/display"
+                class="text-xs text-emerald-400 hover:text-amber-600 font-bold transition uppercase tracking-widest">←
+                Back to Staff Scanner</a>
         </div>
     </div>
 
@@ -64,6 +100,21 @@
                 setTimeout(() => alert.remove(), 500);
             });
         }, 2000);
+
+        const password = document.getElementById("password");
+        const toggleBtn = document.getElementById("togglePassword");
+        const eye = document.getElementById("eyeIcon");
+        const eyeOff = document.getElementById("eyeOffIcon");
+
+        toggleBtn.addEventListener("click", () => {
+            const isHidden = password.type === "password";
+            password.type = isHidden ? "text" : "password";
+
+            eye.classList.toggle("hidden", !isHidden);
+            eyeOff.classList.toggle("hidden", isHidden);
+        });
+
     </script>
 </body>
+
 </html>
