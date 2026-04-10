@@ -12,7 +12,7 @@
         
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 10px; }
 
@@ -29,20 +29,59 @@
             border-left: 4px solid #d97706;
             color: #065f46 !important;
         }
+
+        /* Mobile sidebar overlay */
+        .sidebar-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Table horizontal scroll container */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Prevent text overflow in stats cards */
+        .stat-value {
+            word-break: break-word;
+        }
     </style>
 </head>
 
-<body class="bg-[#fcfdfa] text-slate-900 flex">
+<body class="bg-[#fcfdfa] text-slate-900 flex flex-col lg:flex-row min-h-screen">
 
-    <aside class="w-64 h-screen bg-white border-r border-emerald-100 fixed left-0 top-0 flex flex-col z-20 shadow-xl shadow-emerald-900/5">
-        <div class="p-6 flex items-center gap-3 border-b border-emerald-50">
+    <!-- Mobile Header with Toggle -->
+    <div class="lg:hidden bg-white border-b border-emerald-100 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="gold-gradient p-2 rounded-xl shadow-lg shadow-amber-500/20">
+                <i class="fa-solid fa-leaf text-white text-lg"></i>
+            </div>
+            <h1 class="font-bold text-lg tracking-tight text-emerald-950">Admin<span class="text-amber-600">Page</span></h1>
+        </div>
+        <button id="sidebarToggle" class="h-10 w-10 flex items-center justify-center rounded-xl border border-emerald-100 text-emerald-800 hover:bg-emerald-50 transition-colors">
+            <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 sidebar-overlay z-40 hidden lg:hidden transition-opacity opacity-0"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 w-64 h-screen bg-white border-r border-emerald-100 flex flex-col z-50 shadow-xl shadow-emerald-900/5 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Close Button (Mobile) -->
+        <button id="closeSidebar" class="lg:hidden absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-100 text-emerald-800 hover:bg-emerald-50 transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="p-6 flex items-center gap-3 border-b border-emerald-50 mt-8 lg:mt-0">
             <div class="gold-gradient p-2.5 rounded-xl shadow-lg shadow-amber-500/20">
                 <i class="fa-solid fa-leaf text-white text-lg"></i>
             </div>
             <h1 class="font-bold text-xl tracking-tight text-emerald-950">Admin<span class="text-amber-600">Page</span></h1>
         </div>
 
-        <nav class="flex-1 p-4 space-y-1.5">
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
             <p class="px-4 text-[10px] font-bold text-emerald-800/40 uppercase tracking-[0.2em] mb-3">Management</p>
             
             <a href="/admin" class="flex items-center gap-3 px-4 py-3 text-sm font-bold active-nav transition-all">
@@ -67,7 +106,7 @@
 
         <div class="p-4 bg-emerald-950 text-white m-4 rounded-2xl shadow-lg">
             <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-full border-2 border-amber-500/50 p-0.5">
+                <div class="h-10 w-10 rounded-full border-2 border-amber-500/50 p-0.5 flex-shrink-0">
                     <div class="h-full w-full rounded-full bg-emerald-800 flex items-center justify-center text-amber-500 font-bold text-xs">SA</div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -78,9 +117,11 @@
         </div>
     </aside>
 
-    <div class="flex-1 ml-64">
+    <!-- Main Content -->
+    <div class="flex-1 w-full lg:ml-0">
         
-        <header class="h-20 bg-white/70 backdrop-blur-xl sticky top-0 z-10 border-b border-emerald-50 px-8 flex justify-between items-center">
+        <!-- Desktop Header -->
+        <header class="hidden lg:flex h-20 bg-white/70 backdrop-blur-xl sticky top-0 z-10 border-b border-emerald-50 px-4 xl:px-8 justify-between items-center">
             <div>
                 <h2 class="font-bold text-emerald-950 text-xl">Attendance Analytics</h2>
                 <p class="text-xs text-emerald-700/60">Real-time presence monitoring system</p>
@@ -93,7 +134,6 @@
                 </button>
             </div>
         </header>
-
         <main class="p-8 max-w-7xl mx-auto space-y-8">
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -192,6 +232,38 @@
     </div>
 
     <script src="/static/js/reports.js"></script>
+    <script>
+        // Mobile Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebarFn() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+            document.body.style.overflow = '';
+        }
+
+        sidebarToggle.addEventListener('click', openSidebar);
+        closeSidebar.addEventListener('click', closeSidebarFn);
+        sidebarOverlay.addEventListener('click', closeSidebarFn);
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                closeSidebarFn();
+            }
+        });
+    </script>
 </body>
 
 </html>
