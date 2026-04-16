@@ -1,15 +1,14 @@
 import os
-
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import pyotp
 from datetime import datetime
-from core.database import engine
 from sqlalchemy import text
-from core.ui import BASE_DIR
-from schemes.attendance import AttendanceRequest
+from app.schemas.attendance import AttendanceRequest
 from dotenv import load_dotenv
+from app.core.database import engine
+from app.core.ui import BASE_DIR
 
 # Load environment variables from .env
 load_dotenv()
@@ -22,7 +21,7 @@ if not SHARED_SECRET:
 
 totp = pyotp.TOTP(SHARED_SECRET, interval=45,digits=10)  # QR code changes every 45 seconds
 
-router.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+router.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
 
 @router.get("/get-current-qr-token")
 def get_qr_token():
@@ -30,7 +29,7 @@ def get_qr_token():
 
 @router.get("/display")
 def serve_display():
-    return FileResponse(str(BASE_DIR / "templates" / "display.html"))
+    return FileResponse(str(BASE_DIR / "web" / "templates" / "display.html"))
 
 @router.post("/check-in")
 async def check_in(data: AttendanceRequest):

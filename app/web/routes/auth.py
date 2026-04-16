@@ -2,9 +2,9 @@ import re
 from passlib.context import CryptContext
 from fastapi import APIRouter, Form, HTTPException, Request,status, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
-from core.database import engine
 from sqlalchemy import text
-from core.ui import templates
+from app.core.ui import templates
+from app.core.database import engine
 import datetime
 # -----------------------------
 
@@ -217,3 +217,8 @@ async def change_password(
         )
     
     return RedirectResponse(url="/admin/masters", status_code=303)
+
+
+if __name__ == "__main__":
+    print("This is the auth router. It should be included in main.py and not run directly.")
+    print("templates directory should be:", templates)

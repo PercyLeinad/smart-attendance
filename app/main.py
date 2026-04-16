@@ -3,8 +3,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from api.v1 import attendance, auth, reports
-from core.ui import BASE_DIR
+from app.web.routes import attendance, auth, reports
+from app.core.ui import BASE_DIR
 
 app = FastAPI()
 
@@ -17,7 +17,7 @@ async def disable_cache(request, call_next):
     return response
 
 # 1. Templates & Static Files Setups
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
 
 # 2. Middleware
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
@@ -32,11 +32,11 @@ app.include_router(reports.router, tags=["Reports"])
 # 4. Root/Static Routes (Keep these simple)
 @app.get("/")
 def serve_default():
-    return FileResponse(str(BASE_DIR / "templates" / "default.html"))
+    return FileResponse(str(BASE_DIR / "web" / "templates" / "default.html"))
 
 @app.get("/scan")
 def serve_scan():
-    return FileResponse(str(BASE_DIR / "templates" / "index.html"))
+    return FileResponse(str(BASE_DIR / "web" / "templates" / "index.html"))
 
 
 if __name__ == "__main__":

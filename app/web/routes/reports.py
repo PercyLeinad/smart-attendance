@@ -4,11 +4,11 @@ from datetime import datetime
 from pathlib import Path
 import pandas as pd
 from sqlalchemy import text
-from core.database import engine
+from app.core.database import engine
 from fastapi import APIRouter, Depends
 from fastapi import APIRouter, Query
 from datetime import date
-from api.v1.auth import is_admin
+from app.web.routes.auth import is_admin
 
 router = APIRouter(
     dependencies=[Depends(is_admin)]
