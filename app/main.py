@@ -5,6 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from app.web.routes import attendance, auth, reports
 from app.core.ui import BASE_DIR
+from app.api.v1 import reports as api_reports
 
 app = FastAPI()
 
@@ -28,6 +29,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 app.include_router(attendance.router, tags=["Attendance"])
 app.include_router(auth.router, tags=["Authentication"])
 app.include_router(reports.router, tags=["Reports"])
+app.include_router(api_reports.router, prefix="/api/v1", tags=["API Reports"])
 
 # 4. Root/Static Routes (Keep these simple)
 @app.get("/")

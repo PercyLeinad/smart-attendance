@@ -1,67 +1,38 @@
-
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
-from datetime import datetime
+from datetime import datetime, date
 from pathlib import Path
 import pandas as pd
-from sqlalchemy import text
-from app.core.database import engine
-from fastapi import APIRouter, Depends
-from fastapi import APIRouter, Query
-from datetime import date
 from app.web.routes.auth import is_admin
+from app.services.reports import get_attendance_report
 
 router = APIRouter(
     dependencies=[Depends(is_admin)]
 )
-# router = APIRouter()
+
 # -----------------------------
 # Export CSV Report
 # -----------------------------
-from fastapi import Query
-from datetime import date
-
 @router.get("/admin/report/export")
 def export_data(
     start_date: date = Query(...),
     end_date: date = Query(...)
 ):
-    with engine.connect() as connection:
-        query = text("""
-            SELECT 
-                UPPER(e.pf) AS Pf,
-                UPPER(e.name) AS Name,
-                UPPER(d.code) AS "Department Code",
-                UPPER(d.name) AS "Department Name",
-                UPPER(a.arrival_time) AS Arrival,
-                UPPER(a.checkout_time) AS Checkout
-            FROM attendance_logs AS a
-            INNER JOIN employees AS e 
-                ON e.pf = a.pf
-            INNER JOIN departments AS d
-                ON e.department_code = d.code
-            WHERE a.date_only BETWEEN :start_date AND :end_date
-            ORDER BY a.arrival_time DESC
-        """)
+    # 🔥 Use service (no SQL here anymore)
+    data = get_attendance_report(start_date, end_date)
 
-        result = connection.execute(
-            query,
-            {
-                "start_date": start_date,
-                "end_date": end_date
-            }
-        )
+    df = pd.DataFrame(data)
 
-        rows = [dict(row) for row in result.mappings()]
-
-    df = pd.DataFrame(rows)
-
+    # Ensure reports folder exists
     reports_folder = Path("reports")
     reports_folder.mkdir(exist_ok=True)
 
+    # Generate filename
     today_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"attendance_report_{today_str}.csv"
     file_path = reports_folder / filename
 
+    # Save CSV
     df.to_csv(file_path, index=False)
 
     return FileResponse(
@@ -71,35 +42,14 @@ def export_data(
     )
 
 
+# -----------------------------
+# Get Report Data (for UI)
+# -----------------------------
 @router.get("/admin/report")
 def report_by_range(
     start_date: date = Query(...),
     end_date: date = Query(...)
 ):
-    with engine.connect() as connection:
-        result = connection.execute(
-            text("""
-            SELECT 
-                UPPER(e.pf) AS Pf,
-                UPPER(e.name) AS Name,
-                UPPER(d.code) AS "Department Code",
-                UPPER(d.name) AS "Department Name",
-                UPPER(a.arrival_time) AS Arrival,
-                UPPER(a.checkout_time) AS Checkout
-            FROM attendance_logs AS a
-            INNER JOIN employees AS e 
-                ON e.pf = a.pf
-            INNER JOIN departments AS d
-                ON e.department_code = d.code
-            WHERE a.date_only BETWEEN :start_date AND :end_date
-            ORDER BY a.arrival_time DESC
-            """),
-            {
-                "start_date": start_date,
-                "end_date": end_date
-            }
-        )
-
-        data = [dict(row) for row in result.mappings()]
-
+    # 🔥 Same service reused
+    data = get_attendance_report(start_date, end_date)
     return data

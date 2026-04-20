@@ -1,11 +1,14 @@
+
 import re
 from passlib.context import CryptContext
 from fastapi import APIRouter, Form, HTTPException, Request,status, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from app.core.ui import templates
 from app.core.database import engine
 import datetime
+from app.services import admin as admin_service
 # -----------------------------
 
 SESSION_TIMEOUT = 900  # 15 minutes in seconds
@@ -84,13 +87,7 @@ async def logout(request: Request):
 async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
     # 1. Fetch the missing data
     with engine.connect() as connection:
-        stats = connection.execute(text("""
-            SELECT 
-                (SELECT COUNT(*) FROM employees) AS total_employees,
-                (SELECT COUNT(*) FROM attendance_logs WHERE date_only = CURDATE()) AS today_attendance,
-                (SELECT COUNT(*) FROM employees WHERE pf NOT LIKE 'CA%') AS permanent,
-                (SELECT COUNT(*) FROM employees WHERE pf LIKE 'CA%') AS casuals
-        """)).mappings().one()
+        stats = admin_service.get_dashboard_stats(connection)
 
     response = templates.TemplateResponse(
         "admin.html",
@@ -111,10 +108,7 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
 @router.get("/admin/masters", response_class=HTMLResponse)
 async def masters_page(request: Request, admin: str = Depends(is_admin)):
     with engine.connect() as conn:
-        # We don't select the password for the UI
-        admins = conn.execute(
-            text("SELECT username,created_at,email FROM masters ORDER BY created_at ASC")
-        ).mappings().all()
+        admins = admin_service.list_all_admins(conn)
     
     return templates.TemplateResponse("masters.html", {
         "request": request, 
@@ -124,14 +118,15 @@ async def masters_page(request: Request, admin: str = Depends(is_admin)):
 # 2. Add New Admin
 @router.post("/admin/masters/add")
 async def add_master(
-    request: Request, # You need the request object for templates
+    request: Request,
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
     admin: str = Depends(is_admin),
 ):
-    # 1. Collect errors in a list or check them one by one
     error = None
+
+    # Validation
     if len(password) < 8:
         error = "Password must be at least 8 characters."
     elif not re.search(r"[A-Z]", password):
@@ -139,28 +134,38 @@ async def add_master(
     elif not re.search(r"[0-9]", password):
         error = "Password must contain a number."
 
-    # 2. If there's an error, re-render the original form page
     if error:
         return templates.TemplateResponse(
-            "masters.html", 
-            {"request": request, 
-             "error": error, 
-             "username": username})  
+            "masters.html",
+            {"request": request, "error": error, "username": username}
+        )
 
     hashed_password = pwd_context.hash(password)
-    
+
     try:
         with engine.begin() as conn:
-            conn.execute(
-                text("INSERT INTO masters (username, email, password) VALUES (:u, :e, :p)"),
-                {"u": username, "e": email, "p": hashed_password}
-            )
+            admin_service.add_new_admin(conn, username, email, hashed_password)
+
         return RedirectResponse(url="/admin/masters", status_code=303)
 
-    except Exception as e:
+    except IntegrityError:
         return templates.TemplateResponse(
-            "masters.html", 
-            {"request": request, "error": str(e), "username": username, "email": email }
+            "masters.html",
+            {
+                "request": request,
+                "error": "Username already exists",
+                "username": username,
+                "email": email
+            }
+        )
+
+    except Exception:
+        return templates.TemplateResponse(
+            "masters.html",
+            {
+                "request": request,
+                "error": "Something went wrong"
+            }
         )
 
 # 3. Delete Admin
@@ -176,10 +181,7 @@ async def delete_master(
         )
 
     with engine.begin() as conn:
-        conn.execute(
-            text("DELETE FROM masters WHERE username = :u"),
-            {"u": username}
-        )
+        admin_service.delete_admin_by_username(conn, username)
 
     return RedirectResponse(url="/admin/masters", status_code=303)
 
@@ -211,10 +213,7 @@ async def change_password(
     # 2. Update Database
     hashed_password = pwd_context.hash(new_password)
     with engine.begin() as conn:
-        conn.execute(
-            text("UPDATE masters SET password = :p WHERE username = :u"),
-            {"p": hashed_password, "u": username}
-        )
+        admin_service.update_admin_password(conn, username, hashed_password)
     
     return RedirectResponse(url="/admin/masters", status_code=303)
 

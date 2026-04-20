@@ -9,7 +9,7 @@ from app.schemas.attendance import AttendanceRequest
 from dotenv import load_dotenv
 from app.core.database import engine
 from app.core.ui import BASE_DIR
-
+from app.services import attendance as attendance_service
 # Load environment variables from .env
 load_dotenv()
 
@@ -33,7 +33,7 @@ def serve_display():
 
 @router.post("/check-in")
 async def check_in(data: AttendanceRequest):
-
+    # 1. External Security Check (TOTP)
     if not totp.verify(data.token, valid_window=1):
         raise HTTPException(status_code=400, detail="Invalid or Expired QR Code.")
 
@@ -41,71 +41,37 @@ async def check_in(data: AttendanceRequest):
     today = now.date()
 
     with engine.begin() as conn:
-
-        # 🔹 Resolve PF from either PF or ID input
-        res = conn.execute(
-            text("""
-                SELECT name, pf 
-                FROM employees 
-                WHERE id_number = :sid OR pf = :sid
-            """),
-            {"sid": data.staff_id}
-        ).mappings().one_or_none()
-
-        if not res:
+        # 2. Identify the Staff
+        staff = attendance_service.get_employee_by_id_or_pf(conn, data.staff_id)
+        if not staff:
             raise HTTPException(status_code=404, detail="Staff not found.")
 
-        full_name = res["name"]
-        pf_number = res["pf"]  # ✅ ALWAYS use this after lookup, id or pf is consolidated to pf_number
+        full_name = staff["name"]
+        pf_number = staff["pf"]
 
-        # 🔹 Check today's record USING REAL PF
-        record = conn.execute(
-            text("""
-                SELECT arrival_time, checkout_time
-                FROM attendance_logs
-                WHERE pf = :pf
-                AND date_only = :today
-                LIMIT 1
-            """),
-            {"pf": pf_number, "today": today}
-        ).mappings().one_or_none()
+        # 3. Check for existing logs
+        record = attendance_service.get_attendance_record(conn, pf_number, today)
 
-        # 1️⃣ No record → CHECK IN
+        # CASE 1: First time arriving
         if not record:
-            conn.execute(
-                text("""
-                    INSERT INTO attendance_logs (pf, arrival_time, date_only)
-                    VALUES (:pf, :ts, :today)
-                """),
-                {"pf": pf_number, "ts": now, "today": today}
-            )
+            attendance_service.log_check_in(conn, pf_number, now, today)
             return {"status": "checked_in", "staff": full_name}
 
-        # 2️⃣ Already completed
+        # CASE 2: Already finished for the day
         if record["arrival_time"] and record["checkout_time"]:
             return {"status": "completed", "staff": full_name}
 
-        # 3️⃣ Needs checkout
+        # CASE 3: Leaving (Checkout)
         if record["checkout_time"] is None:
-            
+            # Require explicit confirmation for checkout
             if not data.confirm:
                 return {"status": "confirm_checkout", "staff": full_name}
 
-            result = conn.execute(
-                text("""
-                    UPDATE attendance_logs 
-                    SET checkout_time = :ts 
-                    WHERE pf = :pf 
-                      AND date_only = :today 
-                      AND checkout_time IS NULL
-                """),
-                {"ts": now, "pf": pf_number, "today": today}
-            )
-
-            if result.rowcount > 0:
+            updated = attendance_service.log_check_out(conn, pf_number, now, today)
+            
+            if updated:
                 return {"status": "checked_out", "staff": full_name}
             else:
-                # This handles the race condition where someone might have 
-                # updated it between the SELECT and UPDATE
+                # Fallback for race conditions
                 return {"status": "completed", "staff": full_name}
 
