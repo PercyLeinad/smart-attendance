@@ -19,7 +19,7 @@ def get_attendance_report(start_date, end_date):
             INNER JOIN departments AS d
                 ON e.department_code = d.code
             WHERE a.date_only BETWEEN :start_date AND :end_date
-            ORDER BY a.arrival_time DESC
+            ORDER BY a.arrival_time ASC
             """),
             {
                 "start_date": start_date,
