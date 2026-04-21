@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import pyotp
 from datetime import datetime
-from sqlalchemy import text
 from app.schemas.attendance import AttendanceRequest
 from dotenv import load_dotenv
 from app.core.database import engine

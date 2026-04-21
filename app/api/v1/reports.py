@@ -1,6 +1,6 @@
 from datetime import date
 from app.services.reports import get_attendance_report
-from fastapi import APIRouter, Query, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Query, HTTPException
 router = APIRouter()
 
 MAX_RANGE = 30 # days
