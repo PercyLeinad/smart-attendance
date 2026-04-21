@@ -1,12 +1,15 @@
 #!/bin/bash
 
-echo "Starting FastAPI..."
+echo "Starting FastAPI with Gunicorn..."
 
-# Activating env
-source $(pwd)/.venv/bin/activate
-
-# cd app
+source "$(pwd)/.venv/bin/activate"
 
 IP=127.0.0.1
+PORT=8000
+WORKERS=4
 
-uvicorn app.main:app --reload --port 8000 --host "$IP"
+gunicorn app.main:app \
+    -k uvicorn.workers.UvicornWorker \
+    -w "$WORKERS" \
+    -b "$IP:$PORT" \
+    --timeout 30
