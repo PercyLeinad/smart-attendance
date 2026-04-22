@@ -145,7 +145,7 @@ function proceedAttendance() {
 
 function startResetTimer() {
     const msg = document.getElementById('message');
-    let timeLeft = 10;
+    let timeLeft = 20;
 
     // Create a small reset button dynamically or show a hidden one
     const resetBtn = document.getElementById('resetBtn');
@@ -157,13 +157,13 @@ function startResetTimer() {
 
         if (timeLeft <= 0) {
             clearInterval(interval);
-            window.location.href = '/scan'; // Redirect to scan page
+            window.location.href = '/'; // Redirect to scan page
         }
     }, 1000);
 }
 
 // Redirect manually if they don't want to wait 10 seconds
 function manualReset() {
-    window.location.href = '/scan';
+    window.location.href = '/';
 }
 
