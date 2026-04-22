@@ -5,6 +5,7 @@ source "$(pwd)/.venv/bin/activate"
 IP=127.0.0.1
 PORT=8000
 WORKERS=8
+LOG_DIR="/var/log/gunicorn"
 
 echo "Starting FastAPI with Gunicorn..."
 
