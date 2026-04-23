@@ -13,6 +13,15 @@ from app.services import admin as admin_service
 
 SESSION_TIMEOUT = 900  # 15 minutes in seconds
 
+router = APIRouter()
+
+pwd_context = CryptContext(
+    schemes=["argon2"],
+    argon2__memory_cost=102400,
+    argon2__time_cost=2,
+    argon2__parallelism=8,
+    deprecated="auto"
+)
 
 def is_admin(request: Request):
     admin = request.session.get("admin")
@@ -40,15 +49,6 @@ def is_admin(request: Request):
 
     return admin
 
-router = APIRouter()
-
-pwd_context = CryptContext(
-    schemes=["argon2"],
-    argon2__memory_cost=102400,
-    argon2__time_cost=2,
-    argon2__parallelism=8,
-    deprecated="auto"
-)
 # -----------------------------
 # Login Page
 # -----------------------------

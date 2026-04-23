@@ -57,6 +57,16 @@ function startClock() {
     setInterval(updateTime, 1000);
 }
 
+// Add this helper to get device data
+function getDeviceData() {
+    return {
+        user_agent: navigator.userAgent,
+        screen_resolution: `${screen.width}x${screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+    };
+}
+
 async function submitAttendance(confirm = false) {
     const staffIdInput = document.getElementById('staffId');
     const staffId = staffIdInput.value.trim();
@@ -81,7 +91,8 @@ async function submitAttendance(confirm = false) {
             body: JSON.stringify({
                 staff_id: staffId,
                 token: token,
-                confirm: confirm 
+                confirm: confirm,
+                device_info: getDeviceData()
             })
         });
 

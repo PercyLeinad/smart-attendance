@@ -3,12 +3,17 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from app.web.routes import attendance, auth, reports
+from app.models.database import Base
+from app.web.routes import attendance, auth, fingerprint, reports
 from app.core.ui import BASE_DIR
 from app.api.v1 import reports as api_reports
+from app.core.database import engine
 
 app = FastAPI()
 
+# Create DB tables
+Base.metadata.create_all(bind=engine)
+    
 @app.middleware("http")
 async def disable_cache(request, call_next):
     response = await call_next(request)
@@ -30,6 +35,7 @@ app.include_router(attendance.router, tags=["Attendance"])
 app.include_router(auth.router, tags=["Authentication"])
 app.include_router(reports.router, tags=["Reports"])
 app.include_router(api_reports.router, prefix="/api/v1", tags=["API Reports"])
+app.include_router(fingerprint.router, tags=["Fingerprint"])
 
 # 4. Root/Static Routes (Keep these simple)
 @app.get("/")
@@ -40,6 +46,6 @@ def serve_default():
 def serve_scan():
     return FileResponse(str(BASE_DIR / "web" / "templates" / "index.html"))
 
-
+   
 if __name__ == "__main__":
     print(BASE_DIR)
