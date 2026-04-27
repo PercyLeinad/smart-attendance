@@ -57,13 +57,29 @@ function startClock() {
     setInterval(updateTime, 1000);
 }
 
-// Add this helper to get device data
+function getOrCreateDeviceId() {
+    let id = localStorage.getItem("device_id");
+
+    if (!id) {
+        try {
+            id = crypto.randomUUID();
+        } catch (e) {
+            id = 'dev-' + Math.random().toString(36).substring(2, 15);
+        }
+
+        localStorage.setItem("device_id", id);
+    }
+
+    return id;
+}
+
 function getDeviceData() {
     return {
         user_agent: navigator.userAgent,
         screen_resolution: `${screen.width}x${screen.height}`,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         language: navigator.language,
+        device_id: getOrCreateDeviceId()
     };
 }
 
