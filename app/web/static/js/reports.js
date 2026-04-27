@@ -49,7 +49,7 @@ form.addEventListener("submit", async (e) => {
     `;
 
     try {
-        const res = await fetch(`/admin/report?start_date=${startDate}&end_date=${endDate}`);
+        const res = await fetch(`/admin/report/attendance?start_date=${startDate}&end_date=${endDate}`);
         if (!res.ok) throw new Error("Server responded with an error");
 
         reportData = await res.json();
@@ -144,7 +144,7 @@ exportBtn.addEventListener("click", () => {
         alert("Please select both a Start and End date before exporting.");
         return;
     }
-    window.location.href = `/admin/report/export?start_date=${startDate}&end_date=${endDate}`;
+    window.location.href = `/admin/report/attendance/export?start_date=${startDate}&end_date=${endDate}`;
 });
 
 function showErrorState() {
@@ -162,3 +162,122 @@ function showErrorState() {
         </tr>
     `;
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const riskForm = document.getElementById('deviceRiskForm');
+    const tableBody = document.getElementById('deviceRiskBody');
+
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
+
+    riskForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(riskForm);
+        const start = formData.get('start_date');
+        const end = formData.get('end_date');
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-emerald-900/40">
+                    <div class="animate-pulse">Analyzing device fingerprints...</div>
+                </td>
+            </tr>`;
+
+        try {
+            const response = await fetch(
+                `/admin/report/device-risk?start_date=${start}&end_date=${end}`
+            );
+
+            if (!response.ok) throw new Error('Network error');
+
+            const json = await response.json();
+
+            // ✅ FIX: extract array
+            const items = json.data;
+
+            renderRiskTable(items);
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-red-500">
+                        Error loading risk data.
+                    </td>
+                </tr>`;
+        }
+    });
+
+    function renderRiskTable(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                        No risk anomalies detected.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = items.map(item => {
+
+            const riskColor =
+                item.risk_score >= 8 ? 'text-red-600 font-bold' :
+                item.risk_score >= 5 ? 'text-orange-500 font-semibold' :
+                'text-emerald-600';
+
+            return `
+                <tr class="hover:bg-emerald-50/50 transition-colors">
+
+                    <td class="px-6 py-4">
+                        <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-1 rounded-full font-mono font-bold">
+                            ${item.staff_pf || 'N/A'}
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-sm font-medium text-slate-700">
+                        ${item.name}
+                    </td>
+
+                    <td class="px-6 py-4 text-sm text-slate-600">
+                        ${item.device_count}
+                    </td>
+
+                    <td class="px-6 py-4 text-sm text-slate-600">
+                        ${item.ip_changes}
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <span class="${
+                            item.shared_device_flag
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-emerald-50 text-emerald-600'
+                        } text-[10px] px-2 py-0.5 rounded uppercase font-bold">
+                            ${item.shared_device_flag ? 'Shared Device' : 'Private'}
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-right">
+                        <span class="${riskColor}">
+                            ${item.risk_score}
+                        </span>
+                    </td>
+
+                </tr>
+            `;
+        }).join('');
+    }
+});
+
+exportRiskBtn.addEventListener("click", () => {
+    const formData = new FormData(deviceRiskForm);
+    const startDate = formData.get("start_date");
+    const endDate = formData.get("end_date");
+    if (!startDate || !endDate) {
+        alert("Please select both a Start and End date before exporting.");
+        return;
+    }
+    window.location.href = `/admin/report/device-risk/export?start_date=${startDate}&end_date=${endDate}`;
+});
