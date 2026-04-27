@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.database import Base
-from app.web.routes import attendance, auth, fingerprint, reports
+from app.web.routes import attendance, auth, reports
 from app.core.ui import BASE_DIR
 from app.api.v1 import reports as api_reports
 from app.core.database import engine
@@ -35,7 +35,6 @@ app.include_router(attendance.router, tags=["Attendance"])
 app.include_router(auth.router, tags=["Authentication"])
 app.include_router(reports.router, tags=["Reports"])
 app.include_router(api_reports.router, prefix="/api/v1", tags=["API Reports"])
-app.include_router(fingerprint.router, tags=["Fingerprint"])
 
 # 4. Root/Static Routes (Keep these simple)
 @app.get("/")
