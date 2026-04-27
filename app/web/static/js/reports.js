@@ -7,6 +7,7 @@ let currentPage = 1;
 const rowsPerPage = 5; // Your record limit
 let reportData = [];   // To store the fetched data globally
 
+
 // 2. Element Selectors
 const form = document.getElementById("reportForm");
 const exportBtn = document.getElementById("exportBtn");
@@ -164,6 +165,11 @@ function showErrorState() {
 }
 
 
+let riskCurrentPage = 1;
+const riskRowsPerPage = 5;
+let riskData = [];
+
+// Device Risk Report Logic
 document.addEventListener('DOMContentLoaded', () => {
     const riskForm = document.getElementById('deviceRiskForm');
     const tableBody = document.getElementById('deviceRiskBody');
@@ -194,10 +200,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const json = await response.json();
 
-            // ✅ FIX: extract array
+            // extract + store globally
             const items = json.data;
+            riskData = json.data || [];
+            riskCurrentPage = 1;
 
-            renderRiskTable(items);
+            // render using global state
+            renderRiskTable();
 
         } catch (error) {
             console.error('Fetch error:', error);
@@ -209,68 +218,96 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>`;
         }
     });
-
-    function renderRiskTable(items) {
-        if (!Array.isArray(items) || items.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-slate-400">
-                        No risk anomalies detected.
-                    </td>
-                </tr>`;
-            return;
-        }
-
-        tableBody.innerHTML = items.map(item => {
-
-            const riskColor =
-                item.risk_score >= 8 ? 'text-red-600 font-bold' :
-                item.risk_score >= 5 ? 'text-orange-500 font-semibold' :
-                'text-emerald-600';
-
-            return `
-                <tr class="hover:bg-emerald-50/50 transition-colors">
-
-                    <td class="px-6 py-4">
-                        <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-1 rounded-full font-mono font-bold">
-                            ${item.staff_pf || 'N/A'}
-                        </span>
-                    </td>
-
-                    <td class="px-6 py-4 text-sm font-medium text-slate-700">
-                        ${item.name}
-                    </td>
-
-                    <td class="px-6 py-4 text-sm text-slate-600">
-                        ${item.device_count}
-                    </td>
-
-                    <td class="px-6 py-4 text-sm text-slate-600">
-                        ${item.ip_changes}
-                    </td>
-
-                    <td class="px-6 py-4">
-                        <span class="${
-                            item.shared_device_flag
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-emerald-50 text-emerald-600'
-                        } text-[10px] px-2 py-0.5 rounded uppercase font-bold">
-                            ${item.shared_device_flag ? 'Shared Device' : 'Private'}
-                        </span>
-                    </td>
-
-                    <td class="px-6 py-4 text-right">
-                        <span class="${riskColor}">
-                            ${item.risk_score}
-                        </span>
-                    </td>
-
-                </tr>
-            `;
-        }).join('');
-    }
 });
 
+
+window.changeRiskPage = function (direction) {
+    riskCurrentPage += direction;
+    renderRiskTable();
+};
+
+function renderRiskPagination(totalCount, totalPages) {
+    const start = totalCount === 0 ? 0 : (riskCurrentPage - 1) * riskRowsPerPage + 1;
+    const end = Math.min(riskCurrentPage * riskRowsPerPage, totalCount);
+
+    document.getElementById('riskStartRange').innerText = start;
+    document.getElementById('riskEndRange').innerText = end;
+    document.getElementById('riskTotalRecords').innerText = totalCount;
+
+    document.getElementById('riskPrevBtn').disabled = riskCurrentPage === 1;
+    document.getElementById('riskNextBtn').disabled = riskCurrentPage === totalPages || totalPages === 0;
+}
+
+function renderRiskTable() {
+    const tableBody = document.getElementById('deviceRiskBody');
+
+    if (!Array.isArray(riskData) || riskData.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                    No risk anomalies detected.
+                </td>
+            </tr>`;
+        renderRiskPagination(0, 0);
+        return;
+    }
+
+    // Pagination
+    const startIndex = (riskCurrentPage - 1) * riskRowsPerPage;
+    const endIndex = startIndex + riskRowsPerPage;
+    const paginatedItems = riskData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(riskData.length / riskRowsPerPage);
+
+    tableBody.innerHTML = paginatedItems.map(item => {
+
+        const riskColor =
+            item.risk_score >= 8 ? 'text-red-600 font-bold' :
+                item.risk_score >= 5 ? 'text-orange-500 font-semibold' :
+                    'text-emerald-600';
+
+        return `
+            <tr class="hover:bg-emerald-50/50 transition-colors">
+                <td class="px-8 py-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                        <i class="fa-solid fa-user mr-1.5 text-[10px]"></i>
+                        ${item.staff_pf || 'N/A'}
+                    </span>
+                </td>
+                <td class="px-8 py-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                        <i class="fa-solid fa-user mr-1.5 text-[10px]"></i>
+                        ${item.name}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-600">
+                    ${item.device_count}
+                </td>
+
+                <td class="px-6 py-4 text-sm text-slate-600">
+                    ${item.ip_changes}
+                </td>
+
+                <td class="px-6 py-4">
+                    <span class="${item.shared_device_flag
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-emerald-50 text-emerald-600'} text-[10px] px-2 py-0.5 rounded uppercase font-bold">
+                        ${item.shared_device_flag ? 'Shared Device' : 'Private'}
+                    </span>
+                </td>
+
+                <td class="px-6 py-4 text-right">
+                    <span class="${riskColor}">
+                        ${item.risk_score}
+                    </span>
+                </td>
+
+            </tr>
+        `;
+    }).join('');
+
+    renderRiskPagination(riskData.length, totalPages);
+}
+// Device Risk Report Export Logic
 exportRiskBtn.addEventListener("click", () => {
     const formData = new FormData(deviceRiskForm);
     const startDate = formData.get("start_date");
