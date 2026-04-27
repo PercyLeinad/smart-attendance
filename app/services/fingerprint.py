@@ -3,11 +3,8 @@ from datetime import datetime, UTC
 from sqlalchemy import text
 
 
-def generate_fingerprint(pf_number: str, user_agent: str) -> str:
-    """
-    Creates a stable device fingerprint hash.
-    """
-    fp_string = f"{pf_number}-{user_agent}"
+def generate_fingerprint(device_id: str, user_agent: str, screen: str):
+    fp_string = f"{device_id}|{user_agent}|{screen}"
     return hashlib.sha256(fp_string.encode()).hexdigest()
 
 
@@ -20,8 +17,9 @@ def log_device(conn, *, pf_number: str, device_info, ip_address: str):
         return
 
     fp_hash = generate_fingerprint(
-        pf_number=pf_number,
-        user_agent=device_info.user_agent
+        device_id=device_info.device_id,
+        user_agent=device_info.user_agent,
+        screen=device_info.screen_resolution
     )
 
     conn.execute(
