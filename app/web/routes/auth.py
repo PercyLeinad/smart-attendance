@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.ui import templates
 from app.core.database import engine
 import datetime
-from app.services import admin as admin_service
+from app.services import auth as auth_service
 # -----------------------------
 
 SESSION_TIMEOUT = 900  # 15 minutes in seconds
@@ -57,17 +57,12 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @router.post("/login")
-def login(request: Request, 
-          username: str = Form(...), 
-          password: str = Form(...)
-          ):
+def login(request: Request, username: str = Form(...), password: str = Form(...)):
     with engine.connect() as conn:
-        result = conn.execute(text("SELECT password FROM masters WHERE username = :username"), {"username": username})
-        admin = result.mappings().one_or_none()
+        admin = auth_service.get_admin_password(conn, username)  # 👈 moved
 
     db_password = admin['password'] if admin else None
 
-    # Validate credentials using bcrypt
     if not db_password or not pwd_context.verify(password, db_password):
         return RedirectResponse(url="/login?msg=invalid_credentials", status_code=303)
 
@@ -87,7 +82,7 @@ async def logout(request: Request):
 async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
     # 1. Fetch the missing data
     with engine.connect() as connection:
-        stats = admin_service.get_dashboard_stats(connection)
+        stats = auth_service.get_dashboard_stats(connection)
 
     response = templates.TemplateResponse(
         "admin.html",
@@ -108,7 +103,7 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
 @router.get("/admin/masters", response_class=HTMLResponse)
 async def masters_page(request: Request, admin: str = Depends(is_admin)):
     with engine.connect() as conn:
-        admins = admin_service.list_all_admins(conn)
+        admins = auth_service.list_all_admins(conn)
     
     return templates.TemplateResponse("masters.html", {
         "request": request, 
@@ -144,7 +139,7 @@ async def add_master(
 
     try:
         with engine.begin() as conn:
-            admin_service.add_new_admin(conn, username, email, hashed_password)
+            auth_service.add_new_admin(conn, username, email, hashed_password)
 
         return RedirectResponse(url="/admin/masters", status_code=303)
 
@@ -181,10 +176,9 @@ async def delete_master(
         )
 
     with engine.begin() as conn:
-        admin_service.delete_admin_by_username(conn, username)
+        auth_service.delete_admin_by_username(conn, username)
 
     return RedirectResponse(url="/admin/masters", status_code=303)
-
 
 
 @router.post("/admin/masters/change-password")
@@ -194,27 +188,28 @@ async def change_password(
     new_password: str = Form(...),
     admin: str = Depends(is_admin)
 ):
-    # 1. Validation Logic
     error = None
+
     if len(new_password) < 8:
         error = "New password must be at least 8 characters."
     elif not re.search(r"[A-Z]", new_password):
         error = "New password must contain an uppercase letter."
-    
+
     if error:
         with engine.connect() as conn:
-            admins = conn.execute(text("SELECT username, created_at FROM masters")).fetchall()
+            admins = auth_service.get_all_admins_basic(conn)  # 👈 moved
+
         return templates.TemplateResponse("masters.html", {
-            "request": request, 
-            "admins": admins, 
+            "request": request,
+            "admins": admins,
             "error": error
         })
 
-    # 2. Update Database
     hashed_password = pwd_context.hash(new_password)
+
     with engine.begin() as conn:
-        admin_service.update_admin_password(conn, username, hashed_password)
-    
+        auth_service.update_admin_password(conn, username, hashed_password)
+
     return RedirectResponse(url="/admin/masters", status_code=303)
 
 
