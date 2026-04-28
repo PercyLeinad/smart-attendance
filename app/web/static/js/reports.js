@@ -30,7 +30,7 @@ form.addEventListener("submit", async (e) => {
     // Update UI Header
     if (title) {
         title.innerHTML = `
-            Attendance Report 
+            Attendance Report Dated
             <span class="text-indigo-500 font-medium ml-2 text-sm">
                 (${startDate} to ${endDate})
             </span>
