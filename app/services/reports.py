@@ -28,7 +28,15 @@ def get_attendance_report(start_date, end_date):
         )
 
         return [dict(row) for row in result.mappings()]
-    
+
+"""
+- Device fingerprints (×2) – counts how many unique device identities are used. 
+    More fingerprints suggest possible spoofing or multiple devices.
+- IP addresses (×1) – counts how many different networks are used. 
+    Frequent changes may indicate VPN or unusual access patterns.
+- Shared usage (×5) – checks if the device is used by more than one user. 
+    This is heavily weighted as it strongly suggests account sharing or misuse.
+"""
 
 def get_device_risk_report(start_date, end_date):
     with engine.connect() as connection:
