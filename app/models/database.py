@@ -68,7 +68,7 @@ class Employee(Base):
     )
     email: Mapped[Optional[str]] = mapped_column(
         String(255),
-        unique=True,
+        # unique=True, 
         nullable=True,
         index=True
     )
@@ -80,6 +80,19 @@ class Employee(Base):
 
     department: Mapped[Optional["Department"]] = relationship(
         back_populates="employees"
+    )
+    personal_email: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        # unique=True,
+        nullable=True,
+        index=True
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="Active",
+        index=True
     )
 
     logs: Mapped[List["AttendanceLog"]] = relationship(
