@@ -7,7 +7,7 @@ import json
 
 # Setup file pathways relative to script location
 cwd = pathlib.Path(__file__).parent
-log_file_path = cwd / 'sync_employees.log'  # Or route to absolute path /var/log/dbsync/sync_employees.log
+log_file_path = cwd / "logs" / "sync_employees.log"  # Or route to absolute path /var/log/dbsync/sync_employees.log
 
 load_dotenv(dotenv_path=cwd / '.env')
 
