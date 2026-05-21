@@ -9,7 +9,9 @@ from app.core.database import DATABASE_URL as DB_URL
 
 # Setup Logging Environment Layout
 cwd = pathlib.Path(__file__).parent
-log_file_path = cwd / "logs" / "db_sync.log"  # Or route to absolute path /var/log/dbsync/db_sync.log
+LOG_PATH = cwd.parent
+log_file_path = LOG_PATH / "logs" / "db_sync.log"  # Or route to absolute path /var/log/dbsync/db_sync.log
+
 
 logging.basicConfig(
     level=logging.INFO,

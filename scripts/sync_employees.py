@@ -7,7 +7,8 @@ import json
 
 # Setup file pathways relative to script location
 cwd = pathlib.Path(__file__).parent
-log_file_path = cwd / "logs" / "sync_employees.log"  # Or route to absolute path /var/log/dbsync/sync_employees.log
+LOG_PATH = cwd.parent
+log_file_path = LOG_PATH / "logs" / "sync_employees.log"  # Or route to absolute path /var/log/dbsync/sync_employees.log
 
 load_dotenv(dotenv_path=cwd / '.env')
 
@@ -46,3 +47,4 @@ if __name__ == "__main__":
         logger.error(f"Network operations error talking to remote API endpoint resource: {re}")
     except Exception as e:
         logger.error("Critical failure during API ingestion orchestration phase", exc_info=True)
+    
