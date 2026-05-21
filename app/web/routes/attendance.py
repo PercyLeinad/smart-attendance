@@ -23,7 +23,8 @@ if not SHARED_SECRET:
 
 totp = pyotp.TOTP(SHARED_SECRET, interval=45,digits=10)  # QR code changes every 45 seconds
 
-router.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
+# moved this to nginx or apache for production, but you can uncomment for development
+# router.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
 
 @router.get("/get-current-qr-token")
 def get_qr_token():

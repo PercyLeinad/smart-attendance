@@ -23,7 +23,8 @@ async def disable_cache(request, call_next):
     return response
 
 # 1. Templates & Static Files Setups
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
+# moved this to nginx or apache for production, but you can uncomment for development
+# app.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
 
 # 2. Middleware
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
