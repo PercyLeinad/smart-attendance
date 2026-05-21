@@ -13,6 +13,7 @@ mysql/
 reports/
 tests/
 nginx/
+logs/
 .env
 alembic.ini
 alembic/
