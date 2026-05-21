@@ -16,14 +16,20 @@ fi
 
 PORT=8000
 
-# Kill anything running on port 8000 (optional but helpful)
+# Log directory + file
+LOG_DIR="logs"
+LOG_FILE="$LOG_DIR/fastapi.log"
+
+mkdir -p "$LOG_DIR"
+
+# Kill anything running on port 8000
 echo "Checking port $PORT..."
 lsof -ti:$PORT | xargs kill -9 2>/dev/null
 
-
 echo "✅ Development server running at http://$IP:$PORT"
+echo "📝 Logs: $LOG_FILE"
 
-# Run from the root, but watch the 'app' directory specifically
+# Run FastAPI and save logs
 uvicorn app.main:app \
     --host "$IP" \
     --port "$PORT" \
@@ -33,5 +39,5 @@ uvicorn app.main:app \
     --reload-include "*.html" \
     --reload-include "*.css" \
     --reload-include "*.js" \
-    --log-level debug
-
+    --log-level debug \
+    2>&1 | tee -a "$LOG_FILE"
