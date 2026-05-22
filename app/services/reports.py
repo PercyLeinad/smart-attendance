@@ -11,8 +11,14 @@ def get_attendance_report(start_date, end_date):
                 UPPER(e.name) AS Name,
                 UPPER(d.code) AS "Department Code",
                 UPPER(d.name) AS "Department Name",
-                UPPER(a.arrival_time) AS Arrival,
-                UPPER(a.checkout_time) AS Checkout
+                DATE_FORMAT(
+                        CONVERT_TZ(a.arrival_time, '+00:00', :tz_offset),
+                        '%Y-%m-%d %H:%i:%s'
+                    ) AS Arrival,
+                DATE_FORMAT(
+                        CONVERT_TZ(a.checkout_time, '+00:00', :tz_offset),
+                        '%Y-%m-%d %H:%i:%s'
+                    ) AS Checkout
             FROM attendance_logs AS a
             INNER JOIN employees AS e 
                 ON e.pf = a.pf
@@ -23,7 +29,8 @@ def get_attendance_report(start_date, end_date):
             """),
             {
                 "start_date": start_date,
-                "end_date": end_date
+                "end_date": end_date,
+                "tz_offset": "+03:00" # Or pass the timezone name if your DB has tz tables loaded
             }
         )
 
