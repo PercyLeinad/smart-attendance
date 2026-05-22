@@ -42,21 +42,17 @@ async def login_page(request: Request):
 
 @router.post("/login")
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    # 1. Look up the admin credentials
+    # Look up the admin credentials
     with engine.connect() as conn:
         admin = auth_service.get_admin_password(conn, username)
 
     db_password = admin['password'] if admin else None
 
-    # 2. Check if the password matches
+    # Check if the password matches
     if not db_password or not pwd_context.verify(password, db_password):
         return RedirectResponse(url="/login?msg=invalid_credentials", status_code=303)
 
-    # 3. Gather environment metadata for security hardening
-    ip_address = request.client.host if request.client else None
-    user_agent = request.headers.get("user-agent")
-
-    # 4. Save session state to the database (using .begin() to automatically commit)
+    # Save session state to the database (using .begin() to automatically commit)
     # 🌟 NEW SECURITY LAYER: If the browser sent an old cookie, destroy it first!
     old_session_id = request.cookies.get("session_id")
     
@@ -72,7 +68,7 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
             user_agent=request.headers.get("user-agent")
         )
 
-    # 5. Bind the random token to a secure, HTTP-Only browser cookie
+    # Bind the random token to a secure, HTTP-Only browser cookie
     response = RedirectResponse("/admin", status_code=303)
     response.set_cookie(
         key="session_id",
@@ -86,23 +82,23 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
 
 @router.get("/logout")
 async def logout(request: Request):
-    # 1. Retrieve the opaque session token from incoming cookies
+    # Retrieve the opaque session token from incoming cookies
     session_id = request.cookies.get("session_id")
     response = RedirectResponse(url="/login", status_code=303)
     
     if session_id:
-        # 2. Drop the record completely from your MySQL database
+        # Drop the record completely from your MySQL database
         with engine.begin() as conn:
             session_service.delete_user_session(conn, session_id)
             
-        # 3. Force the browser to clear the local cookie footprint
+        # Force the browser to clear the local cookie footprint
         response.delete_cookie(key="session_id", path="/")
         
     return response
 
 @router.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
-    # 1. Fetch the missing data
+    # Fetch the missing data
     with engine.connect() as connection:
         stats = auth_service.get_dashboard_stats(connection)
         email = auth_service.get_admin_by_username(connection, admin)
@@ -128,7 +124,7 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
 
     return response
 
-# 1. Page to List Admins
+# Page to List Admins
 @router.get("/admin/masters", response_class=HTMLResponse)
 async def masters_page(request: Request, error: str = None, delete_error: str = None, admin: str = Depends(is_admin)):
     with engine.connect() as conn:
@@ -142,7 +138,7 @@ async def masters_page(request: Request, error: str = None, delete_error: str = 
         "admin": admin                  # Pass the logged-in user down to the page context
     })
 
-# 2. Add New Admin
+# Add New Admin
 @router.post("/admin/masters/add")
 async def add_master(
     request: Request,
@@ -195,7 +191,7 @@ async def add_master(
             }
         )
 
-# 3. Delete Admin
+# Delete Admin
 @router.post("/admin/masters/delete/{username}")
 async def delete_master(
     username: str,
