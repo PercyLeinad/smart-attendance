@@ -119,11 +119,11 @@
                 <div class="h-10 w-10 rounded-full border-2 border-amber-500/50 p-0.5 flex-shrink-0">
                     <div
                         class="h-full w-full rounded-full bg-emerald-800 flex items-center justify-center text-amber-500 font-bold text-xs">
-                        SA</div>
+                        {{ current_admin[0] | upper }}</div>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold truncate">System Administrator</p>
-                    <p class="text-[10px] text-emerald-400">Master Access</p>
+                    <p><strong>{{ current_admin | title }}</strong></p>
+                    <p class="text-xs text-emerald-300/60">{{ email }}</p>
                 </div>
             </div>
         </div>
