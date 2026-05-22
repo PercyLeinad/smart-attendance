@@ -83,7 +83,12 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
     # 1. Fetch the missing data
     with engine.connect() as connection:
         stats = auth_service.get_dashboard_stats(connection)
-        email = auth_service.get_admin_by_username(connection, admin)["email"]  # 👈 moved
+        email = auth_service.get_admin_by_username(connection, admin)
+
+    if email:
+        admin_email = email['email']
+    else:
+        admin_email = "Unknown Email"
         
     response = templates.TemplateResponse(
         "admin.html",
@@ -91,7 +96,7 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
             "request": request,
             "stats": stats,
             "current_admin": admin,
-            "email": email
+            "email": admin_email
         }
     )
 
