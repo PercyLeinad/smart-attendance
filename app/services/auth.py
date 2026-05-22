@@ -46,3 +46,10 @@ def get_all_admins_basic(conn):
         text("SELECT username, created_at FROM masters")
     )
     return result.fetchall()
+
+def get_admin_by_username(conn, username: str):
+    result = conn.execute(
+        text("SELECT email FROM masters WHERE username = :username"),
+        {"username": username}
+    )
+    return result.mappings().one_or_none()
