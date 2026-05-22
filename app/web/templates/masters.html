@@ -293,10 +293,13 @@
             }
             return confirm(`Revoke all access for ${targetUser}?`);
         }
-
+        // helper to convert usernames to Title Case for display in the password modal
+        function toTitleCase(str) {
+                    return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+                }
         function openChangePasswordModal(username) {
             document.getElementById('targetUsername').value = username;
-            document.getElementById('displayUser').innerText = username;
+            document.getElementById('displayUser').innerText = toTitleCase(username);
             passModal.classList.remove('hidden');
             setTimeout(() => {
                 passModal.classList.add('opacity-100');
