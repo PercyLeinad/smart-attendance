@@ -44,16 +44,16 @@ def get_client_ip(request: Request) -> str:
 
 @router.post("/check-in")
 async def check_in(data: AttendanceRequest, request: Request):
-    # 1. External Security Check (TOTP)
+    # External Security Check (TOTP)
     if not totp.verify(data.token, valid_window=1):
         raise HTTPException(status_code=400, detail="Invalid or Expired QR Code.")
 
-    now = datetime.now()
+    now = datetime.now(UTC)
     today = now.date()
     ip_address = get_client_ip(request)
 
     with engine.begin() as conn:
-        # 2. Identify the Staff
+        # Identify the Staff
         staff = attendance_service.get_employee_by_id_or_pf(conn, data.staff_id)
         if not staff:
             raise HTTPException(status_code=404, detail="Staff not found.")
@@ -61,11 +61,11 @@ async def check_in(data: AttendanceRequest, request: Request):
         full_name = staff["name"]
         pf_number = staff["pf"]
 
-        # 3. Check for existing logs FIRST
+        # Check for existing logs FIRST
         record = attendance_service.get_attendance_record(conn, pf_number, today)
         
         # -------------------------------
-        # CASE 1: First time check-in
+        # First time check-in
         # -------------------------------
         if not record:
             attendance_service.log_check_in(conn, pf_number, now, today)
@@ -80,13 +80,13 @@ async def check_in(data: AttendanceRequest, request: Request):
             return {"status": "checked_in", "staff": full_name}
 
         # -------------------------------
-        # CASE 2: Already completed
+        # Already completed
         # -------------------------------
         if record["arrival_time"] and record["checkout_time"]:
             return {"status": "completed", "staff": full_name}
 
         # -------------------------------
-        # CASE 3: Checkout flow
+        # Checkout flow
         # -------------------------------
         if record["checkout_time"] is None:
             # Step 1: Ask for confirmation (NO logging here)
