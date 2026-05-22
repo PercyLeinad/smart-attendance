@@ -53,10 +53,23 @@
             </button>
         </div>
 
+        {% if delete_error %}
+        <div id="deleteAlert"
+            class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold flex items-center justify-between shadow-sm animate-fade-in">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>
+                <span>{{ delete_error }}</span>
+            </div>
+            <button onclick="document.getElementById('deleteAlert').remove();"
+                class="text-red-400 hover:text-red-700 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        {% endif %}
+
         <div class="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-emerald-100 overflow-hidden">
 
             {% if not admins or admins|length == 0 %}
-            <!-- EMPTY STATE -->
             <div class="p-20 text-center">
                 <div class="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fa-solid fa-user-shield text-3xl text-emerald-200"></i>
@@ -66,7 +79,6 @@
             </div>
 
             {% else %}
-            <!-- TABLE -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -91,7 +103,6 @@
                         {% for master in admins %}
                         <tr class="hover:bg-emerald-50/30 transition-all group">
 
-                            <!-- ADMIN COLUMN -->
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-4">
                                     <div
@@ -105,7 +116,6 @@
                                     </div>
                                 </div>
                             </td>
-                            <!-- EMAIL -->
                             <td class="px-8 py-5 text-sm font-medium text-emerald-800/60">
                                 <a href="mailto:{{ master.email }}"
                                     class="text-emerald-600 hover:text-emerald-900 transition-colors">
@@ -113,13 +123,11 @@
                                     {{ master.email }}
                                 </a>
                             </td>
-                            <!-- DATE COLUMN -->
                             <td class="px-8 py-5 text-sm font-bold text-emerald-800/60">
                                 <i class="fa-regular fa-calendar-check mr-2"></i>
                                 {{ master.created_at }}
                             </td>
 
-                            <!-- ACTIONS COLUMN -->
                             <td class="px-8 py-5 text-right">
                                 <div class="flex justify-end gap-3">
 
@@ -130,7 +138,7 @@
                                     </button>
 
                                     <form action="/admin/masters/delete/{{ master.username }}" method="POST"
-                                        onsubmit="return confirm('Revoke all access for {{ master.username }}?');"
+                                        onsubmit="return verifyAndConfirmDelete('{{ master.username }}', '{{ admin }}');"
                                         class="inline">
                                         <button type="submit"
                                             class="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
@@ -156,56 +164,59 @@
     <div id="adminModal"
         class="fixed inset-0 bg-emerald-950/60 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div id="modalContent"
-            class="bg-white w-full max-w-md m-4 p-10 rounded-[2.5rem] shadow-2xl border border-emerald-100 relative transform scale-95 transition-all duration-300">
+            class="bg-white w-full max-w-sm m-4 p-6 rounded-[2rem] shadow-2xl border border-emerald-100 relative transform scale-95 transition-all duration-300">
+
             <button onclick="toggleModal(false)"
-                class="absolute top-6 right-6 text-emerald-300 hover:text-emerald-950 transition-colors">
-                <i class="fa-solid fa-circle-xmark text-2xl"></i>
+                class="absolute top-5 right-5 text-emerald-300 hover:text-emerald-950 transition-colors">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
             </button>
 
-            <div class="mb-8">
+            <div class="mb-5">
                 <div
-                    class="h-14 w-14 must-gold-gradient rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-amber-500/30 mb-4">
+                    class="h-11 w-11 must-gold-gradient rounded-xl flex items-center justify-center text-white text-xl shadow-xl shadow-amber-500/30 mb-3">
                     <i class="fa-solid fa-user-shield"></i>
                 </div>
-                <h3 class="font-black text-2xl text-emerald-950">Grant <span class="text-amber-600">Privileges</span>
+                <h3 class="font-black text-xl text-emerald-950">Grant <span class="text-amber-600">Privileges</span>
                 </h3>
-                <p class="text-emerald-600/60 text-sm font-medium">Define a new authority in the system.</p>
+                <p class="text-emerald-600/60 text-xs font-medium">Define a new authority in the system.</p>
             </div>
 
             {% if error %}
             <div
-                class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold flex items-center gap-3 animate-bounce">
+                class="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold flex items-center gap-2 animate-bounce">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>{{ error }}</span>
             </div>
             {% endif %}
 
-            <form action="/admin/masters/add" method="POST" class="space-y-6" autocomplete="off">
-                <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">Unique
+            <form action="/admin/masters/add" method="POST" class="space-y-4" autocomplete="off">
+                <div class="space-y-1">
+                    <label class="block text-[9px] font-black text-emerald-900 uppercase tracking-widest ml-1">Unique
                         Username</label>
-                    <input type="text" name="username" maxlength="15" autocomplete="new-username"
-                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
+                    <input type="text" name="username" value="{{ username if username else '' }}" maxlength="15"
+                        autocomplete="new-username"
+                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-xl px-4 py-3 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950 text-sm">
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">
-                        Email</label>
-                    <input type="email" name="email" maxlength="40" autocomplete="email"
-                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
+                <div class="space-y-1">
+                    <label
+                        class="block text-[9px] font-black text-emerald-900 uppercase tracking-widest ml-1">Email</label>
+                    <input type="email" name="email" value="{{ email if email else '' }}" maxlength="40"
+                        autocomplete="email"
+                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-xl px-4 py-3 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950 text-sm">
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest ml-1">Access
+                <div class="space-y-1">
+                    <label class="block text-[9px] font-black text-emerald-900 uppercase tracking-widest ml-1">Access
                         Password</label>
                     <input type="password" name="password" minlength="8" required autocomplete="new-password"
-                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950">
-                    <p class="text-[10px] text-emerald-400 font-bold ml-1">Security: Use 8+ characters with mixed cases.
+                        class="w-full bg-emerald-50/50 border border-emerald-100 rounded-xl px-4 py-3 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-emerald-950 text-sm">
+                    <p class="text-[9px] text-emerald-400 font-bold ml-1">Security: Use 8+ characters with mixed cases.
                     </p>
                 </div>
 
                 <button type="submit"
-                    class="w-full must-green-gradient hover:brightness-110 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-emerald-900/20 active:scale-95">
+                    class="w-full must-green-gradient hover:brightness-110 text-white font-black py-3 rounded-xl transition-all shadow-xl shadow-emerald-900/20 active:scale-95 text-sm mt-2">
                     Authorize Account
                 </button>
             </form>
@@ -250,12 +261,13 @@
     </div>
 
     <script>
-        // Modal Logic
+        // Modal Logic Elements
         const modal = document.getElementById('adminModal');
         const content = document.getElementById('modalContent');
         const passModal = document.getElementById('passwordModal');
         const passContent = document.getElementById('passModalContent');
 
+        // Check specifically for validation error triggers
         const hasError = {% if error %} true {% else %} false {% endif %};
 
         function toggleModal(show) {
@@ -271,6 +283,15 @@
                 content.classList.remove('scale-100');
                 setTimeout(() => modal.classList.add('hidden'), 250);
             }
+        }
+
+        // 🌟 FRONTEND DELETION INTERCEPTOR
+        function verifyAndConfirmDelete(targetUser, loggedInAdmin) {
+            if (targetUser.toLowerCase() === loggedInAdmin.toLowerCase()) {
+                alert("❌ Operation Blocked: You cannot delete your own account!");
+                return false; // Complete termination; form submission blocked entirely
+            }
+            return confirm(`Revoke all access for ${targetUser}?`);
         }
 
         function openChangePasswordModal(username) {
@@ -289,7 +310,7 @@
             setTimeout(() => passModal.classList.add('hidden'), 250);
         }
 
-        // Auto-open if error
+        // Auto-open modal ONLY if creation validation triggers a native failure
         window.addEventListener('load', () => { if (hasError) toggleModal(true); });
 
         // Close on ESC
