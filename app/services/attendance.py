@@ -33,7 +33,10 @@ def log_check_in(conn: Connection, pf: str, now: datetime, today: date):
             INSERT INTO attendance_logs (pf, arrival_time, date_only)
             VALUES (:pf, :ts, :today)
         """),
-        {"pf": pf, "ts": now, "today": today}
+        {
+        "pf": pf, 
+         "ts": now.replace(tzinfo=None), 
+         "today": today}
     )
 
 def log_check_out(conn: Connection, pf: str, now: datetime, today: date):
@@ -46,6 +49,9 @@ def log_check_out(conn: Connection, pf: str, now: datetime, today: date):
               AND date_only = :today 
               AND checkout_time IS NULL
         """),
-        {"ts": now, "pf": pf, "today": today}
+        {   
+            "ts": now.replace(tzinfo=None),
+            "pf": pf,
+            "today": today}
     )
     return result.rowcount > 0
