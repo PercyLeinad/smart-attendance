@@ -1,17 +1,14 @@
-
 import re
 from passlib.context import CryptContext
-from fastapi import APIRouter, Form, HTTPException, Request,status, Depends
+from fastapi import APIRouter, Form, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from app.core.ui import templates
 from app.core.database import engine
+from app.core.session import is_admin
 import datetime
 from app.services import auth as auth_service
-# -----------------------------
-
-SESSION_TIMEOUT = 900  # 15 minutes in seconds
 
 router = APIRouter()
 
@@ -22,32 +19,6 @@ pwd_context = CryptContext(
     argon2__parallelism=8,
     deprecated="auto"
 )
-
-def is_admin(request: Request):
-    admin = request.session.get("admin")
-    last_activity = request.session.get("last_activity")
-
-    if not admin or not last_activity:
-        raise HTTPException(
-            status_code=status.HTTP_302_FOUND,
-            headers={"Location": "/login"}
-        )
-
-    # Convert stored timestamp back to datetime
-    last_activity = datetime.datetime.fromisoformat(last_activity)
-
-    # Check if session expired
-    if datetime.datetime.now() - last_activity > datetime.timedelta(seconds=SESSION_TIMEOUT):
-        request.session.clear()
-        raise HTTPException(
-            status_code=status.HTTP_302_FOUND,
-            headers={"Location": "/login?msg=session_expired"}
-        )
-
-    # Update activity timestamp
-    request.session["last_activity"] = datetime.datetime.now().isoformat()
-
-    return admin
 
 # -----------------------------
 # Login Page
@@ -77,7 +48,6 @@ async def logout(request: Request):
     request.session.clear() 
     return RedirectResponse(url="/login", status_code=303)
 
-
 @router.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
     # 1. Fetch the missing data
@@ -105,7 +75,6 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
     response.headers["Expires"] = "0"
 
     return response
-
 
 # 1. Page to List Admins
 @router.get("/admin/masters", response_class=HTMLResponse)
