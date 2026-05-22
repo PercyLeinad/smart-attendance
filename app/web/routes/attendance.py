@@ -1,11 +1,8 @@
-import hashlib
 import os
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 import pyotp
 from datetime import UTC, datetime
-from sqlalchemy import text
 from app.schemas.attendance import AttendanceRequest
 from dotenv import load_dotenv
 from app.core.database import engine
