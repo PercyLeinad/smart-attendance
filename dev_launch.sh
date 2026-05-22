@@ -6,7 +6,7 @@ echo "🧪 Starting FastAPI (development mode)..."
 source "$(pwd)/.venv/bin/activate"
 
 # Get LAN IP (first non-loopback IPv4)
-IP=$(hostname -I | awk '{print $1}')
+# IP=$(hostname -I | awk '{print $1}')
 
 # Fallback in case detection fails
 if [ -z "$IP" ]; then
