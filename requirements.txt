@@ -15,3 +15,4 @@ bcrypt
 passlib[argon2]
 python-dotenv
 gunicorn
+redis
