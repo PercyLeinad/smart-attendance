@@ -2,13 +2,15 @@ import re
 from passlib.context import CryptContext
 from fastapi import APIRouter, Form, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from app.core.ui import templates
 from app.core.database import engine
 from app.core.session import is_admin
 from app.services import auth as auth_service
-from app.services import session as session_service
+import uuid
+from fastapi.responses import RedirectResponse
+from app.core.redis import redis_client
+from app.core.session import SESSION_TIMEOUT
 
 router = APIRouter()
 
@@ -25,75 +27,97 @@ pwd_context = CryptContext(
 # -----------------------------
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    # Check if a session cookie exists
     session_id = request.cookies.get("session_id")
-    
-    if session_id:
-        with engine.connect() as conn:
-            # Look up if it's a valid session in the DB
-            user_session = session_service.get_session_by_id(conn, session_id)
-            
-        if user_session:
-            # Admin is already validated! Don't let them log in again, send them to dashboard
-            return RedirectResponse(url="/admin", status_code=303)
 
-    # If no session or invalid session, show the login page normally
-    return templates.TemplateResponse("login.html", {"request": request})
+    if session_id:
+        session_data = redis_client.hgetall(
+            f"session:{session_id}"
+        )
+
+        if session_data:
+            return RedirectResponse(
+                url="/admin",
+                status_code=303
+            )
+
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": request}
+    )
 
 @router.post("/login")
-def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    # Look up the admin credentials
+def login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
     with engine.connect() as conn:
         admin = auth_service.get_admin_password(conn, username)
 
     db_password = admin['password'] if admin else None
 
-    # Check if the password matches
     if not db_password or not pwd_context.verify(password, db_password):
-        return RedirectResponse(url="/login?msg=invalid_credentials", status_code=303)
-
-    # Save session state to the database (using .begin() to automatically commit)
-    # 🌟 NEW SECURITY LAYER: If the browser sent an old cookie, destroy it first!
-    old_session_id = request.cookies.get("session_id")
-    
-    with engine.begin() as conn:
-        if old_session_id:
-            session_service.delete_user_session(conn, old_session_id)
-            
-        # This guarantees secrets.token_urlsafe(32) runs freshly for a new string
-        session_token = session_service.create_user_session(
-            conn=conn, 
-            username=username, 
-            ip_address=request.client.host if request.client else None, 
-            user_agent=request.headers.get("user-agent")
+        return RedirectResponse(
+            url="/login?msg=invalid_credentials",
+            status_code=303
         )
 
-    # Bind the random token to a secure, HTTP-Only browser cookie
-    response = RedirectResponse("/admin", status_code=303)
+    # Delete old session if exists
+    old_session_id = request.cookies.get("session_id")
+
+    if old_session_id:
+        redis_client.delete(f"session:{old_session_id}")
+
+    # Create new session
+    session_id = str(uuid.uuid4())
+
+    redis_client.hset(
+        f"session:{session_id}",
+        mapping={
+            "username": username,
+            "ip_address": request.client.host if request.client else "",
+            "user_agent": request.headers.get("user-agent", "")
+        }
+    )
+
+    # Auto expiration
+    redis_client.expire(
+        f"session:{session_id}",
+        SESSION_TIMEOUT
+    )
+
+    response = RedirectResponse(
+        "/admin",
+        status_code=303
+    )
+
     response.set_cookie(
         key="session_id",
-        value=session_token,
-        httponly=True,        # Prevents JavaScript reading token (XSS protection)
-        samesite="lax",       # Protects against CSRF attacks
-        secure=False          # Set to True when running over HTTPS/SSL
+        value=session_id,
+        httponly=True,
+        samesite="lax",
+        secure=False
     )
-    return response
 
+    return response
 
 @router.get("/logout")
 async def logout(request: Request):
-    # Retrieve the opaque session token from incoming cookies
     session_id = request.cookies.get("session_id")
-    response = RedirectResponse(url="/login", status_code=303)
-    
+
+    response = RedirectResponse(
+        url="/login",
+        status_code=303
+    )
+
     if session_id:
-        # Drop the record completely from your MySQL database
-        with engine.begin() as conn:
-            session_service.delete_user_session(conn, session_id)
-            
-        # Force the browser to clear the local cookie footprint
-        response.delete_cookie(key="session_id", path="/")
-        
+        redis_client.delete(f"session:{session_id}")
+
+    response.delete_cookie(
+        key="session_id",
+        path="/"
+    )
+
     return response
 
 @router.get("/admin", response_class=HTMLResponse)
