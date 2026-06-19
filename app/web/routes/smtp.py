@@ -5,13 +5,13 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.database import engine
 from app.services.smtp import get_user_email_by_pf
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter()
 
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-SMTP_USER = "pnyaga@must.ac.ke"
-SMTP_PASSWORD = "xknadoawxppvvbyt"
+
 
 
 class SendLinkRequest(BaseModel):
