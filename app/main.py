@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.database import Base
-from app.web.routes import attendance, auth, reports
+from app.web.routes import attendance, auth, reports, smtp
 from app.core.ui import BASE_DIR
 from app.api.v1 import reports as api_reports
 from app.core.database import engine
@@ -34,6 +34,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 # Using 'tags' helps organize your automated /docs page
 app.include_router(attendance.router, tags=["Attendance"])
 app.include_router(auth.router, tags=["Authentication"])
+app.include_router(smtp.router,tags=["Email Notification"])
 app.include_router(reports.router, tags=["Reports"])
 app.include_router(api_reports.router, prefix="/api/v1", tags=["API Reports"])
 
