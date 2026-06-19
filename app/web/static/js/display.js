@@ -1,25 +1,42 @@
-const BASE_URL = window.location.origin; // Automatically set to current origin
+const BASE_URL = window.location.origin;
 
+// DOM Element References
 const qrContainer = document.getElementById("qrcode");
 const timerElement = document.getElementById("timer");
-const progressBar = document.getElementById("progress-bar"); // New reference
-const qrcode = new QRCode(qrContainer, { width: 300, height: 300 });
+const progressBar = document.getElementById("progress-bar");
+const pfInput = document.getElementById("pfInput");
+const sendEmailBtn = document.getElementById("sendEmailBtn");
+const statusMsg = document.getElementById("statusMsg");
 
+// --- FIX 1: Only initialize the QRCode library if its container actually exists on this page ---
+let qrcode = null;
+if (qrContainer) {
+    qrcode = new QRCode(qrContainer, { width: 300, height: 300 });
+}
 
-let timeLeft = 45; // Initial time left in seconds
-const totalTime = 45; // Total time for the countdown
+// State Management
+let timeLeft = 45;
+const totalTime = 45;
+let currentToken = ""; 
+let idleTimer;
 
+/**
+ * Core QR Code & Token Synchronization
+ */
 async function updateQR() {
     try {
         const response = await fetch('/get-current-qr-token');
         const data = await response.json();
         
-        const qrUrl = `${BASE_URL}/scan?token=${data.token}`;
+        currentToken = data.token; 
+        const qrUrl = `${BASE_URL}/scan?token=${currentToken}`;
         
-        qrcode.clear();
-        qrcode.makeCode(qrUrl);
+        // --- FIX 2: Only attempt to update the QR component visually if it is loaded on the screen ---
+        if (qrcode) {
+            qrcode.clear();
+            qrcode.makeCode(qrUrl);
+        }
         
-        // Reset Logic
         timeLeft = totalTime;
         updateUI(); 
     } catch (err) {
@@ -27,22 +44,113 @@ async function updateQR() {
     }
 }
 
+/**
+ * UI State Synchronization (Timer and Progress Bar)
+ */
 function updateUI() {
-    // Update Text
-    timerElement.innerText = timeLeft;
+    if (timerElement) timerElement.innerText = timeLeft;
     
-    // Update Progress Bar Width
-    const percentage = (timeLeft / totalTime) * 100;
-    progressBar.style.width = `${percentage}%`;
+    if (progressBar) {
+        const percentage = (timeLeft / totalTime) * 100;
+        progressBar.style.width = `${percentage}%`;
 
-    // Optional: Change color to red when time is low
-    if (timeLeft <= 5) {
-        progressBar.classList.replace('bg-blue-600', 'bg-red-500');
-    } else {
-        progressBar.classList.replace('bg-red-500', 'bg-blue-600');
+        // Safely check if classes exist before attempting to replace them
+        if (timeLeft <= 5) {
+            if (progressBar.classList.contains('bg-blue-600')) {
+                progressBar.classList.replace('bg-blue-600', 'bg-red-500');
+            }
+        } else {
+            if (progressBar.classList.contains('bg-red-500')) {
+                progressBar.classList.replace('bg-red-500', 'bg-blue-600');
+            }
+        }
     }
 }
 
+/**
+ * UI Toggle for Collapsible Email Accordion Section
+ */
+function toggleEmailSection() {
+    const section = document.getElementById('email-section');
+    const chevron = document.getElementById('chevron-icon');
+    if (!section) return;
+    
+    const isHidden = section.classList.toggle('hidden');
+    if (chevron) {
+        chevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+}
+
+/**
+ * Helper to display operational status alerts
+ */
+function showStatus(text, colorClass) {
+    if (!statusMsg) return;
+    statusMsg.innerText = text;
+    statusMsg.className = `text-xs text-center font-medium ${colorClass}`;
+    statusMsg.classList.remove('hidden');
+}
+
+/**
+ * Email Submission Event Handler
+ */
+if (sendEmailBtn) {
+    sendEmailBtn.addEventListener("click", async () => {
+        const pfNumber = pfInput ? pfInput.value.trim() : "";
+        if (statusMsg) statusMsg.classList.add('hidden');
+        
+        if (!pfNumber) {
+            showStatus("Please enter a valid PF number.", "text-amber-400");
+            return;
+        }
+
+        if (!currentToken) {
+            showStatus("No active sync token available. Please wait for a fresh cycle.", "text-amber-400");
+            return;
+        }
+
+        sendEmailBtn.disabled = true;
+        sendEmailBtn.innerText = "Dispatching...";
+
+        try {
+            const response = await fetch('/send-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pf: pfNumber,
+                    qr_link: `${BASE_URL}/scan?token=${currentToken}`
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                showStatus("Success! Check your primary or personal inbox.", "text-emerald-400");
+                if (pfInput) pfInput.value = ""; 
+            } else {
+                showStatus(`Error: ${result.detail || 'Failed processing request'}`, "text-rose-400");
+            }
+        } catch (err) {
+            console.error("Transmission error:", err);
+            showStatus("Network failure. Connection to dispatch route lost.", "text-rose-400");
+        } finally {
+            sendEmailBtn.disabled = false;
+            sendEmailBtn.innerText = "Send Access Link";
+        }
+    });
+}
+
+/**
+ * Global Interactivity Auto-Timeout Operations (Inactivity Redirection)
+ */
+const resetTimer = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+        window.location.href = '/';
+    }, 45000); 
+};
+
+// Global Execution Intervals
 setInterval(() => {
     timeLeft--;
     if (timeLeft <= 0) {
@@ -52,33 +160,17 @@ setInterval(() => {
     }
 }, 1000);
 
-// Initial load
-updateQR();
-
-
-// 1. Keyboard Shortcut: Escape key to go home
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
         window.location.href = '/';
     }
 });
 
-// 2. Auto-Timeout: Redirect to home after 45 seconds of inactivity
-// This resets whenever the user moves the mouse or touches the screen
-let idleTimer;
-
-const resetTimer = () => {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-        window.location.href = '/';
-    }, 45000); // 45000ms = 45 seconds
-};
-
-// Listen for user interaction to reset the idle clock
 window.addEventListener('mousemove', resetTimer);
 window.addEventListener('mousedown', resetTimer);
 window.addEventListener('keypress', resetTimer);
 window.addEventListener('touchstart', resetTimer);
 
-// Initialize the timer on page load
+// Initial execution hooks
+updateQR();
 resetTimer();
