@@ -1,7 +1,7 @@
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
-def get_user_email_by_pf(connection: Connection, identifier: str) -> str:
+def get_user(connection: Connection, identifier: str):
     """Fetches the primary or personal email for a given PF number."""
     query = text("""
         SELECT email, personal_email 
@@ -10,12 +10,4 @@ def get_user_email_by_pf(connection: Connection, identifier: str) -> str:
         LIMIT 1
     """)
     
-    result = connection.execute(query, {"identifier": identifier}).fetchone()
-    
-    if not result:
-        raise ValueError("User not found or inactive.")
-    
-    # Prioritize professional email, fallback to personal_email
-    email = result.email if result.email else result.personal_email
-
-    return email
+    return connection.execute(query, {"identifier": identifier}).fetchone()

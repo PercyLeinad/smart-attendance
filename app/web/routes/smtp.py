@@ -4,9 +4,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.database import engine
-from app.services.smtp import get_user_email_by_pf
+from app.services.smtp import get_user
 from dotenv import load_dotenv
 import os
+from app.core.redis import redis_client
 
 load_dotenv()
 
@@ -22,18 +23,70 @@ class SendLinkRequest(BaseModel):
     qr_link: str
 
 
+from datetime import datetime, time
+import redis
+from fastapi import APIRouter, HTTPException
+
+router = APIRouter()
+redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
 @router.post("/send-link")
 def send_qr_link_email(data: SendLinkRequest):
+    # 1. TIME GATE: Enforce 8:00 AM to 5:00 PM (17:00) window
+    current_time = datetime.now().time()
+    start_time = time(8, 0)
+    end_time = time(17, 0)
 
+    if not (start_time <= current_time <= end_time):
+        raise HTTPException(
+            status_code=403,  # Forbidden
+            detail="Access link requests are only permitted between 8:00 AM and 5:00 PM."
+        )
+
+    # 2. DAILY CAP RATE LIMITING (Max 2 requests per calendar day)
+    # Append the current date to the key name so it tracks per-day requests uniquely
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    rate_limit_key = f"email_requests:{data.pf}:{current_date}"
+    
+    # Increment the user's daily request count
+    request_count = redis_client.incr(rate_limit_key)
+    
+    # If it's their first request today, set it to expire at midnight
+    if request_count == 1:
+        # Calculate seconds remaining until midnight
+        now = datetime.now()
+        midnight = datetime.combine(now.date(), time(23, 59, 59))
+        seconds_until_midnight = int((midnight - now).total_seconds())
+        
+        redis_client.expire(rate_limit_key, seconds_until_midnight)
+
+    # Check if they have exceeded the daily allowance
+    if request_count > 2:
+        raise HTTPException(
+            status_code=429,  # Too Many Requests
+            detail="You have reached your limit of 2 email requests for today. Please use the scanner or try again tomorrow."
+        )
+
+    # 3. DATABASE VERIFICATION (Existing Flow)
     with engine.connect() as connection:
-        to_email = get_user_email_by_pf(connection, data.pf)
+        user_row = get_user(connection, data.pf)
+
+    if not user_row:
+        # Decrement counter so typos don't waste their 2 daily tries
+        redis_client.decr(rate_limit_key)
+        raise HTTPException(status_code=404, detail="No such user found in the system.")
+
+    to_email = user_row.email if user_row.email else user_row.personal_email
 
     if not to_email:
         raise HTTPException(
-            status_code=404,
-            detail="No email address found for the supplied PF number."
+            status_code=422,
+            detail="User found, but no email address is registered on your profile."
         )
 
+    # ... proceed with SMTP mail processing and delivery ...
+
+    # Proceed to construct and dispatch your MIMEMultipart email payload safely...
     msg = MIMEMultipart()
     msg["From"] = SMTP_USER
     msg["To"] = to_email
