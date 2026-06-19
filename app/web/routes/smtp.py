@@ -6,13 +6,16 @@ from email.mime.multipart import MIMEMultipart
 from app.core.database import engine
 from app.services.smtp import get_user_email_by_pf
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
 router = APIRouter()
 
-
-
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = os.getenv("SMTP_PORT")
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
 class SendLinkRequest(BaseModel):
     pf: str
