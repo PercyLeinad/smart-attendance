@@ -8,6 +8,7 @@ from app.services.smtp import get_user
 from dotenv import load_dotenv
 import os
 from app.core.redis import redis_client
+from datetime import datetime, time
 
 load_dotenv()
 
@@ -21,14 +22,6 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 class SendLinkRequest(BaseModel):
     pf: str
     qr_link: str
-
-
-from datetime import datetime, time
-import redis
-from fastapi import APIRouter, HTTPException
-
-router = APIRouter()
-redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 @router.post("/send-link")
 def send_qr_link_email(data: SendLinkRequest):
@@ -81,7 +74,7 @@ def send_qr_link_email(data: SendLinkRequest):
     if not to_email:
         raise HTTPException(
             status_code=422,
-            detail="User found, but no email address is registered on your profile."
+            detail="User found, but no email address is registered on your database."
         )
 
     # ... proceed with SMTP mail processing and delivery ...
