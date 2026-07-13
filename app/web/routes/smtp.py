@@ -54,10 +54,10 @@ def send_qr_link_email(data: SendLinkRequest):
         redis_client.expire(rate_limit_key, seconds_until_midnight)
 
     # Check if they have exceeded the daily allowance
-    if request_count > 2:
+    if request_count > 4:
         raise HTTPException(
             status_code=429,  # Too Many Requests
-            detail="You have reached your limit of 2 email requests for today. Please use the scanner or try again tomorrow."
+            detail="You have reached your limit of 4 email requests for today. Please use the scanner or try again tomorrow."
         )
 
     # 3. DATABASE VERIFICATION (Existing Flow)
@@ -65,7 +65,7 @@ def send_qr_link_email(data: SendLinkRequest):
         user_row = get_user(connection, data.pf)
 
     if not user_row:
-        # Decrement counter so typos don't waste their 2 daily tries
+        # Decrement counter so typos don't waste their 4 daily tries
         redis_client.decr(rate_limit_key)
         raise HTTPException(status_code=404, detail="No such user found in the system.")
 
