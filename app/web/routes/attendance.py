@@ -1,31 +1,25 @@
-import os
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
-import pyotp
 from datetime import UTC, datetime
 from app.schemas.attendance import AttendanceRequest
-from dotenv import load_dotenv
 from app.core.database import engine
 from app.core.ui import BASE_DIR
 from app.services import attendance as attendance_service
 from app.services.fingerprint import log_device
-# Load environment variables from .env
-load_dotenv()
+from app.core.tokens import TokenService
+from fastapi.responses import RedirectResponse
+from itsdangerous import SignatureExpired, BadSignature
+from app.core.redis import redis_client
+from app.core.status import status_page
 
 router = APIRouter()
-
-SHARED_SECRET = os.getenv("SHARED_SECRET")
-if not SHARED_SECRET:
-    raise ValueError("SHARED_SECRET environment variable is not set.")
-
-totp = pyotp.TOTP(SHARED_SECRET, interval=45,digits=10)  # QR code changes every 45 seconds
 
 # moved this to nginx or apache for production, but you can uncomment for development
 # router.mount("/static", StaticFiles(directory=str(BASE_DIR / "web" / "static")), name="static")
 
-@router.get("/get-current-qr-token")
-def get_qr_token():
-    return {"token": totp.now()}
+@router.get("/get-current-qr-token") 
+def get_qr_token(): 
+    return {"token": TokenService.current_qr_token()}
 
 @router.get("/display")
 def serve_display():
@@ -45,7 +39,7 @@ def get_client_ip(request: Request) -> str:
 @router.post("/check-in")
 async def check_in(data: AttendanceRequest, request: Request):
     # External Security Check (TOTP)
-    if not totp.verify(data.token, valid_window=1):
+    if not TokenService.verify_qr_token(data.token):
         raise HTTPException(status_code=400, detail="Invalid or Expired QR Code.")
 
     now = datetime.now(UTC)
@@ -106,3 +100,23 @@ async def check_in(data: AttendanceRequest, request: Request):
                 return {"status": "checked_out", "staff": full_name}
             else:
                 return {"status": "completed", "staff": full_name}
+            
+
+
+@router.get("/email-access/{token}")
+def email_access(token: str):
+
+    try:
+        data = TokenService.verify_email_token(token, max_age=120) # SINGLE-USE CHECK HERE 
+        used_key = f"email-used:{token}" 
+        if redis_client.exists(used_key): 
+            return status_page( title="Link Already Used", message="This attendance link has already been used and cannot be used again.", icon="🔒", button_text="Request Another Link", button_color="#f59e0b" )
+        redis_client.setex(used_key, 120, "1") 
+        pf = data["pf"] 
+        qr_token = TokenService.current_qr_token() 
+        return RedirectResponse( url=f"/scan?token={qr_token}&pf={pf}&email=1", status_code=302 )
+
+    except SignatureExpired: 
+        return status_page( title="Link Expired", message="This attendance link has expired for your security. Please request a new link from the attendance display.", icon="⏰", button_text="Request New Link", button_color="#10b981" )
+    except BadSignature: 
+        return status_page( title="Invalid Link", message="This attendance link is invalid or has been tampered with. Please request a new access link from the attendance display.", icon="⚠️", button_text="Go to Attendance Display", button_color="#2563eb" )
