@@ -1,3 +1,4 @@
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 import smtplib
@@ -9,6 +10,8 @@ from dotenv import load_dotenv
 import os
 from app.core.redis import redis_client
 from datetime import datetime, time
+from fastapi import Request
+from app.core.tokens import TokenService
 
 load_dotenv()
 
@@ -21,10 +24,9 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
 class SendLinkRequest(BaseModel):
     pf: str
-    qr_link: str
-
+    
 @router.post("/send-link")
-def send_qr_link_email(data: SendLinkRequest):
+def send_qr_link_email(data: SendLinkRequest, request: Request):
     # 1. TIME GATE: Enforce 8:00 AM to 5:00 PM (17:00) window
     current_time = datetime.now().time()
     start_time = time(8, 0)
@@ -54,16 +56,16 @@ def send_qr_link_email(data: SendLinkRequest):
         redis_client.expire(rate_limit_key, seconds_until_midnight)
 
     # Check if they have exceeded the daily allowance
-    if request_count > 4:
-        raise HTTPException(
-            status_code=429,  # Too Many Requests
-            detail="You have reached your limit of 4 email requests for today. Please use the scanner or try again tomorrow."
-        )
+    # if request_count > 4:
+    #     raise HTTPException(
+    #         status_code=429,  # Too Many Requests
+    #         detail="You have reached your limit of 4 email requests for today. Please use the scanner or try again tomorrow."
+    #     )
 
     # 3. DATABASE VERIFICATION (Existing Flow)
     with engine.connect() as connection:
         user_row = get_user(connection, data.pf)
-
+    
     if not user_row:
         # Decrement counter so typos don't waste their 4 daily tries
         redis_client.decr(rate_limit_key)
@@ -78,7 +80,11 @@ def send_qr_link_email(data: SendLinkRequest):
         )
 
     # ... proceed with SMTP mail processing and delivery ...
+    base_url = str(request.base_url).rstrip("/")
 
+    token = TokenService.create_email_token(data.pf)
+    
+    email_link = f"{base_url}/email-access/{token}"
     # Proceed to construct and dispatch your MIMEMultipart email payload safely...
     msg = MIMEMultipart()
     msg["From"] = SMTP_USER
@@ -92,7 +98,7 @@ def send_qr_link_email(data: SendLinkRequest):
         <p>Hello,</p>
         <p>You have requested an access link.</p>
         <p>Please use the link below:</p>
-        <p><a href="{data.qr_link}" style="font-weight: bold; color: #10b981;">{data.qr_link}</a></p>
+        <p><a href="{email_link}" style="font-weight: bold; color: #10b981;">{email_link}</a></p>
         <p><em>Note: This link is time-sensitive and will expire shortly.</em></p>
         <br>
         <p style="font-size: 11px; color: #6b7280;">This is an automated system notification. Please do not reply to this email.</p>
