@@ -22,3 +22,4 @@ uv.lock
 pyproject.toml
 *.json
 *.log
+db/
