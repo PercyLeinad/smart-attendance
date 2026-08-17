@@ -12,7 +12,6 @@ wheels/
 mysql/
 reports/
 tests/
-nginx/
 logs/
 .env
 alembic.ini
@@ -22,4 +21,3 @@ uv.lock
 pyproject.toml
 *.json
 *.log
-db/
