@@ -126,7 +126,7 @@ if (sendEmailBtn) {
 
                     case 404:
                         showStatus(
-                            'No such user found in the system.',
+                            'No such user found in the system, please verify the PF number.',
                             'text-rose-400'
                         );
                         break;
@@ -139,7 +139,7 @@ if (sendEmailBtn) {
 
                     case 422:
                         showStatus(
-                            'User found, but no email address is registered on your database.',
+                            'This account is not eligible for email dispatch. Please contact support.',
                             'text-rose-400'
                         );
                         break;
