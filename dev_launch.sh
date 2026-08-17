@@ -14,7 +14,7 @@ if [ -z "$IP" ]; then
     IP="127.0.0.1"
 fi
 
-PORT=8000
+PORT=9000
 
 # Log directory + file
 LOG_DIR="logs"
@@ -22,7 +22,7 @@ LOG_FILE="$LOG_DIR/fastapi.log"
 
 mkdir -p "$LOG_DIR"
 
-# Kill anything running on port 8000
+# Kill anything running on port 9000
 echo "Checking port $PORT..."
 lsof -ti:$PORT | xargs kill -9 2>/dev/null
 
