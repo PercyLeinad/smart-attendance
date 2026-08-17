@@ -25,7 +25,7 @@ async function updateQR() {
         currentToken = data.token;
         const qrUrl = `${BASE_URL}/scan?token=${currentToken}`;
 
-      
+
         if (qrcode) {
             qrcode.clear();
             qrcode.makeCode(qrUrl);
@@ -124,6 +124,12 @@ if (sendEmailBtn) {
                         );
                         break;
 
+                    case 404:
+                        showStatus(
+                            'No such user found in the system.',
+                            'text-rose-400'
+                        );
+                        break;
                     case 429:
                         showStatus(
                             'You have reached the request limit. Please try again later.',
@@ -131,13 +137,12 @@ if (sendEmailBtn) {
                         );
                         break;
 
-                    case 500:
+                    case 422:
                         showStatus(
-                            'Email service is temporarily unavailable.',
+                            'User found, but no email address is registered on your database.',
                             'text-rose-400'
                         );
                         break;
-
                     default:
                         showStatus(
                             'Unable to process request.',
