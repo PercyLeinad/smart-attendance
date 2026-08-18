@@ -132,7 +132,7 @@ if (sendEmailBtn) {
                         break;
                     case 429:
                         showStatus(
-                            'You have reached the request limit. Please try again later.',
+                            'You have reached the request limit. Please try again Tomorrow.',
                             'text-rose-400'
                         );
                         break;
