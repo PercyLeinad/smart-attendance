@@ -11,6 +11,7 @@ import uuid
 from fastapi.responses import RedirectResponse
 from app.core.redis import redis_client
 from app.core.session import SESSION_TIMEOUT
+from app.services.auth import create_session,close_session
 
 router = APIRouter()
 
@@ -51,6 +52,7 @@ def login(
     username: str = Form(...),
     password: str = Form(...)
 ):
+    # Verify credentials
     with engine.connect() as conn:
         admin = auth_service.get_admin_password(conn, username)
 
@@ -62,30 +64,52 @@ def login(
             status_code=303
         )
 
-    # Delete old session if exists
     old_session_id = request.cookies.get("session_id")
 
+    # Remove old Redis session
     if old_session_id:
         redis_client.delete(f"session:{old_session_id}")
+
+        # Record old session as replaced
+        with engine.begin() as conn:
+            close_session(
+                conn,
+                old_session_id,
+                "session_replaced"
+            )
 
     # Create new session
     session_id = str(uuid.uuid4())
 
+    ip_address = request.client.host if request.client else ""
+    user_agent = request.headers.get("user-agent", "")
+
+    # Store active session in Redis
     redis_client.hset(
         f"session:{session_id}",
         mapping={
             "username": username,
-            "ip_address": request.client.host if request.client else "",
-            "user_agent": request.headers.get("user-agent", "")
+            "ip_address": ip_address,
+            "user_agent": user_agent
         }
     )
 
-    # Auto expiration
     redis_client.expire(
         f"session:{session_id}",
         SESSION_TIMEOUT
     )
 
+    # Store login audit record
+    with engine.begin() as conn:
+        create_session(
+            conn,
+            session_id,
+            username,
+            ip_address,
+            user_agent
+        )
+
+    # Set cookie
     response = RedirectResponse(
         "/admin",
         status_code=303
@@ -111,8 +135,18 @@ async def logout(request: Request):
     )
 
     if session_id:
+        # Remove active session from Redis
         redis_client.delete(f"session:{session_id}")
 
+        # Record logout in database
+        with engine.begin() as conn:
+            close_session(
+                conn,
+                session_id,
+                "logout"
+            )
+
+    # Remove browser cookie
     response.delete_cookie(
         key="session_id",
         path="/"
