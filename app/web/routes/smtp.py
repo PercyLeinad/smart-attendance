@@ -34,41 +34,27 @@ def send_qr_link_email(data: SendLinkRequest, request: Request):
 
     if not (start_time <= current_time <= end_time):
         raise HTTPException(
-            status_code=403,  # Forbidden
+            status_code=403,
             detail="Access link requests are only permitted between 8:00 AM and 5:00 PM."
         )
 
     # 2. DAILY CAP RATE LIMITING (Max 2 requests per calendar day)
-    # Append the current date to the key name so it tracks per-day requests uniquely
     current_date = datetime.now().strftime("%Y-%m-%d")
     rate_limit_key = f"email_requests:{data.pf}:{current_date}"
-    
-    # Increment the user's daily request count
-    request_count = redis_client.incr(rate_limit_key)
-    
-    # If it's their first request today, set it to expire at midnight
-    if request_count == 1:
-        # Calculate seconds remaining until midnight
-        now = datetime.now()
-        midnight = datetime.combine(now.date(), time(23, 59, 59))
-        seconds_until_midnight = int((midnight - now).total_seconds())
-        
-        redis_client.expire(rate_limit_key, seconds_until_midnight)
 
-    # Check if they have exceeded the daily allowance
-    # if request_count > 4:
-    #     raise HTTPException(
-    #         status_code=429,  # Too Many Requests
-    #         detail="You have reached your limit of 4 email requests for today. Please use the scanner or try again tomorrow."
-    #     )
+    # Check request count BEFORE incrementing to prevent bypassing
+    current_count = int(redis_client.get(rate_limit_key) or 0)
+    if current_count >= 2:
+        raise HTTPException(
+            status_code=429,
+            detail="You have reached your maximum allowance of 2 email requests for today."
+        )
 
-    # 3. DATABASE VERIFICATION (Existing Flow)
+    # 3. DATABASE VERIFICATION
     with engine.connect() as connection:
         user_row = get_user(connection, data.pf)
-    
+
     if not user_row:
-        # Decrement counter so typos don't waste their 4 daily tries
-        redis_client.decr(rate_limit_key)
         raise HTTPException(status_code=404, detail="No such user found in the system.")
 
     to_email = user_row.email if user_row.email else user_row.personal_email
@@ -76,22 +62,28 @@ def send_qr_link_email(data: SendLinkRequest, request: Request):
     if not to_email:
         raise HTTPException(
             status_code=422,
-            detail="User found, but no email address is registered on your database."
+            detail="User found, but no email address is registered on your account."
         )
 
-    # ... proceed with SMTP mail processing and delivery ...
-    base_url = str(request.base_url).rstrip("/")
+    # 4. INCREMENT COUNTER & SET EXPIRATION (Only for valid users)
+    request_count = redis_client.incr(rate_limit_key)
+    if request_count == 1:
+        # Calculate seconds until midnight so key expires automatically at 00:00:00
+        now = datetime.now()
+        midnight = datetime.combine(now.date(), time(23, 59, 59))
+        seconds_until_midnight = max(1, int((midnight - now).total_seconds()))
+        redis_client.expire(rate_limit_key, seconds_until_midnight)
 
+    # 5. DISPATCH SMTP MAIL
+    base_url = str(request.base_url).rstrip("/")
     token = TokenService.create_email_token(data.pf)
-    
     email_link = f"{base_url}/email-access/{token}"
-    # Proceed to construct and dispatch your MIMEMultipart email payload safely...
+
     msg = MIMEMultipart()
     msg["From"] = SMTP_USER
     msg["To"] = to_email
     msg["Subject"] = "Attendance Link"
 
-    #  Alternative: Bolded HTML payload format
     html_body = f"""
     <html>
       <body>
@@ -116,4 +108,6 @@ def send_qr_link_email(data: SendLinkRequest, request: Request):
         return {"message": "Email sent successfully"}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Roll back counter if SMTP fails so user doesn't lose a valid attempt
+        redis_client.decr(rate_limit_key)
+        raise HTTPException(status_code=500, detail="Failed to send email. Please try again later.")
