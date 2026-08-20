@@ -36,15 +36,6 @@ def get_attendance_report(start_date, end_date):
 
         return [dict(row) for row in result.mappings()]
 
-"""
-- Device fingerprints (×2) – counts how many unique device identities are used. 
-    More fingerprints suggest possible spoofing or multiple devices.
-- IP addresses (×1) – counts how many different networks are used. 
-    Frequent changes may indicate VPN or unusual access patterns.
-- Shared usage (×5) – checks if the device is used by more than one user. 
-    This is heavily weighted as it strongly suggests account sharing or misuse.
-"""
-
 def get_device_risk_report():
     with engine.connect() as connection:
         result = connection.execute(
@@ -53,35 +44,65 @@ def get_device_risk_report():
                 e.pf AS staff_pf,
                 UPPER(e.name) AS name,
 
-                /* DEVICE METRICS */
+                /* =========================
+                   DEVICE METRICS
+                ========================== */
+
+                /* fingerprint_hash is now derived from stable device_id */
                 COUNT(DISTINCT d.fingerprint_hash) AS device_count,
-                COUNT(DISTINCT d.ip_address) - 1 AS ip_changes,
+
+                /* Informational only — not part of device identity */
+                GREATEST(COUNT(DISTINCT d.ip_address) - 1, 0) AS ip_changes,
 
                 /* Shared device detection */
-                MAX(CASE 
-                    WHEN sd.shared_users > 1 THEN 1 
-                    ELSE 0 
-                END) AS shared_device_flag,
+                MAX(
+                    CASE 
+                        WHEN COALESCE(sd.shared_users, 0) > 1 THEN 1
+                        ELSE 0
+                    END
+                ) AS shared_device_flag,
 
-                /* Convert UTC to Local Time */
-                CONVERT_TZ(MAX(d.last_seen), '+00:00', :tz_offset) AS last_seen,
+                /* Convert UTC to local time */
+                CONVERT_TZ(
+                    MAX(d.last_seen),
+                    '+00:00',
+                    :tz_offset
+                ) AS last_seen,
 
                 /* =========================
-                   RISK SCORE (DEVICE ONLY)
+                   DEVICE RISK SCORE
                 ========================== */
                 (
-                    (COUNT(DISTINCT d.fingerprint_hash) * 2) +
-                    (COUNT(DISTINCT d.ip_address) * 1) +
-                    (MAX(CASE WHEN sd.shared_users > 1 THEN 1 ELSE 0 END) * 5)
+                    /* Multiple devices */
+                    CASE
+                        WHEN COUNT(DISTINCT d.fingerprint_hash) <= 1 THEN 0
+                        WHEN COUNT(DISTINCT d.fingerprint_hash) = 2 THEN 2
+                        WHEN COUNT(DISTINCT d.fingerprint_hash) <= 4 THEN 5
+                        ELSE 10
+                    END
+
+                    +
+
+                    /* Device used by multiple staff members */
+                    CASE
+                        WHEN MAX(
+                            CASE
+                                WHEN COALESCE(sd.shared_users, 0) > 1 THEN 1
+                                ELSE 0
+                            END
+                        ) = 1
+                        THEN 10
+                        ELSE 0
+                    END
                 ) AS risk_score
 
             FROM devices d
 
             INNER JOIN employees e 
-                ON e.pf COLLATE utf8mb4_general_ci 
+                ON e.pf COLLATE utf8mb4_general_ci
                 = d.staff_pf COLLATE utf8mb4_general_ci
 
-            /* Shared device detection subquery */
+            /* Count how many different staff use each device */
             LEFT JOIN (
                 SELECT 
                     fingerprint_hash,
@@ -89,7 +110,7 @@ def get_device_risk_report():
                 FROM devices
                 GROUP BY fingerprint_hash
             ) sd 
-                ON sd.fingerprint_hash COLLATE utf8mb4_general_ci 
+                ON sd.fingerprint_hash COLLATE utf8mb4_general_ci
                 = d.fingerprint_hash COLLATE utf8mb4_general_ci
 
             GROUP BY e.pf, e.name
