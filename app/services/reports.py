@@ -36,6 +36,13 @@ def get_attendance_report(start_date, end_date):
 
         return [dict(row) for row in result.mappings()]
 
+
+    """
+    1 device   → 0 points
+    2 devices  → 2 points
+    3–4 devices → 5 points
+    5+ devices → 10 points
+    """
 def get_device_risk_report():
     with engine.connect() as connection:
         result = connection.execute(
