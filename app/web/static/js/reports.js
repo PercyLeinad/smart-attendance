@@ -164,7 +164,6 @@ function showErrorState() {
     `;
 }
 
-
 let riskCurrentPage = 1;
 const riskRowsPerPage = 5;
 let riskData = [];
@@ -172,54 +171,56 @@ let riskData = [];
 // Device Risk Report Logic
 document.addEventListener('DOMContentLoaded', () => {
     const riskForm = document.getElementById('deviceRiskForm');
-    const tableBody = document.getElementById('deviceRiskBody');
+    const exportRiskBtn = document.getElementById('exportRiskBtn');
 
-    const today = new Date().toISOString().split('T')[0];
-    document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
+    // Fetch report data on initial load
+    fetchRiskReport();
 
-    riskForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (riskForm) {
+        riskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            fetchRiskReport();
+        });
+    }
 
-        const formData = new FormData(riskForm);
-        const start = formData.get('start_date');
-        const end = formData.get('end_date');
-
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-6 py-12 text-center text-emerald-900/40">
-                    <div class="animate-pulse">Analyzing device fingerprints...</div>
-                </td>
-            </tr>`;
-
-        try {
-            const response = await fetch(
-                `/admin/report/device-risk?start_date=${start}&end_date=${end}`
-            );
-
-            if (!response.ok) throw new Error('Network error');
-
-            const json = await response.json();
-
-            // extract + store globally
-            const items = json.data;
-            riskData = json.data || [];
-            riskCurrentPage = 1;
-
-            // render using global state
-            renderRiskTable();
-
-        } catch (error) {
-            console.error('Fetch error:', error);
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-red-500">
-                        Error loading risk data.
-                    </td>
-                </tr>`;
-        }
-    });
+    if (exportRiskBtn) {
+        exportRiskBtn.addEventListener("click", () => {
+            window.location.href = `/admin/report/device-risk/export`;
+        });
+    }
 });
 
+async function fetchRiskReport() {
+    const tableBody = document.getElementById('deviceRiskBody');
+
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-emerald-900/40">
+                <div class="animate-pulse">Analyzing device fingerprints...</div>
+            </td>
+        </tr>`;
+
+    try {
+        const response = await fetch('/admin/report/device-risk');
+        if (!response.ok) throw new Error('Network error');
+
+        const json = await response.json();
+
+        riskData = json.data || [];
+        riskCurrentPage = 1;
+
+        renderRiskTable();
+
+    } catch (error) {
+        console.error('Fetch error:', error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-red-500">
+                    Error loading risk data.
+                </td>
+            </tr>`;
+    }
+}
 
 window.changeRiskPage = function (direction) {
     riskCurrentPage += direction;
@@ -252,14 +253,12 @@ function renderRiskTable() {
         return;
     }
 
-    // Pagination
     const startIndex = (riskCurrentPage - 1) * riskRowsPerPage;
     const endIndex = startIndex + riskRowsPerPage;
     const paginatedItems = riskData.slice(startIndex, endIndex);
     const totalPages = Math.ceil(riskData.length / riskRowsPerPage);
 
     tableBody.innerHTML = paginatedItems.map(item => {
-
         const riskColor =
             item.risk_score >= 8 ? 'text-red-600 font-bold' :
                 item.risk_score >= 5 ? 'text-orange-500 font-semibold' :
@@ -282,11 +281,9 @@ function renderRiskTable() {
                 <td class="px-6 py-4 text-sm text-slate-600">
                     ${item.device_count}
                 </td>
-
                 <td class="px-6 py-4 text-sm text-slate-600">
                     ${item.ip_changes}
                 </td>
-
                 <td class="px-6 py-4">
                     <span class="${item.shared_device_flag
                         ? 'bg-red-100 text-red-700'
@@ -294,27 +291,14 @@ function renderRiskTable() {
                         ${item.shared_device_flag ? 'Shared Device' : 'Private'}
                     </span>
                 </td>
-
                 <td class="px-6 py-4 text-right">
                     <span class="${riskColor}">
                         ${item.risk_score}
                     </span>
                 </td>
-
             </tr>
         `;
     }).join('');
 
     renderRiskPagination(riskData.length, totalPages);
 }
-// Device Risk Report Export Logic
-exportRiskBtn.addEventListener("click", () => {
-    const formData = new FormData(deviceRiskForm);
-    const startDate = formData.get("start_date");
-    const endDate = formData.get("end_date");
-    if (!startDate || !endDate) {
-        alert("Please select both a Start and End date before exporting.");
-        return;
-    }
-    window.location.href = `/admin/report/device-risk/export?start_date=${startDate}&end_date=${endDate}`;
-});
