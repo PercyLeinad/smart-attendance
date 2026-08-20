@@ -41,11 +41,11 @@ app.include_router(api_reports.router, prefix="/api/v1", tags=["API Reports"])
 # 4. Root/Static Routes (Keep these simple)
 @app.get("/")
 def serve_default():
-    return FileResponse(str(BASE_DIR / "web" / "templates" / "default.html"))
+    return FileResponse(str(BASE_DIR / "web" / "templates" / "base.html"))
 
 @app.get("/scan")
 def serve_scan():
-    return FileResponse(str(BASE_DIR / "web" / "templates" / "index.html"))
+    return FileResponse(str(BASE_DIR / "web" / "templates" / "home.html"))
 
    
 if __name__ == "__main__":

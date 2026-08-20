@@ -42,7 +42,7 @@ async def login_page(request: Request):
             )
 
     return templates.TemplateResponse(
-        "login.html",
+        "admin_login.html",
         {"request": request}
     )
 
@@ -167,7 +167,7 @@ async def admin_dashboard(request: Request, admin: str = Depends(is_admin)):
         admin_email = "Unknown Email"
         
     response = templates.TemplateResponse(
-        "admin.html",
+        "admin_dashboard.html",
         {
             "request": request,
             "stats": stats,
@@ -188,7 +188,7 @@ async def masters_page(request: Request, error: str = None, delete_error: str = 
     with engine.connect() as conn:
         admins = auth_service.list_all_admins(conn)
     
-    return templates.TemplateResponse("masters.html", {
+    return templates.TemplateResponse("admin_users.html", {
         "request": request, 
         "admins": admins,
         "error": error,                 # Handles "Add Admin" modal errors
@@ -217,7 +217,7 @@ async def add_master(
 
     if error:
         return templates.TemplateResponse(
-            "masters.html",
+            "admin_users.html",
             {"request": request, "error": error, "username": username}
         )
 
@@ -231,7 +231,7 @@ async def add_master(
 
     except IntegrityError:
         return templates.TemplateResponse(
-            "masters.html",
+            "admin_users.html",
             {
                 "request": request,
                 "error": "Username or Email already exists",
@@ -242,7 +242,7 @@ async def add_master(
 
     except Exception:
         return templates.TemplateResponse(
-            "masters.html",
+            "admin_users.html",
             {
                 "request": request,
                 "error": "Something went wrong"
@@ -286,7 +286,7 @@ async def change_password(
         with engine.connect() as conn:
             admins = auth_service.get_all_admins_basic(conn)  # 👈 moved
 
-        return templates.TemplateResponse("masters.html", {
+        return templates.TemplateResponse("admin_users.html", {
             "request": request,
             "admins": admins,
             "error": error

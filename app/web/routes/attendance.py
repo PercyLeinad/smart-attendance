@@ -23,7 +23,7 @@ def get_qr_token():
 
 @router.get("/display")
 def serve_display():
-    return FileResponse(str(BASE_DIR / "web" / "templates" / "display.html"))
+    return FileResponse(str(BASE_DIR / "web" / "templates" / "attendance_terminal.html"))
 
 def get_client_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
