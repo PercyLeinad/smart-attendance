@@ -53,34 +53,29 @@ def export_data(
         filename=filename
     )
 
-
 @router.get(
     "/admin/report/device-risk",
     response_model=DeviceRiskReportResponse
 )
-def device_risk_report(start_date: date, end_date: date):
-    data =  get_device_risk_report(start_date, end_date)
-    return { "data": data }
+def device_risk_report():
+    data = get_device_risk_report()
+    return {"data": data}
     
 
 @router.get(
-    "/admin/report/device-risk/export",
-    response_model=DeviceRiskReportResponse
+    "/admin/report/device-risk/export"
 )
-def device_risk_report_export(start_date: date, end_date: date):
-    data =  get_device_risk_report(start_date, end_date)
+def device_risk_report_export():
+    data = get_device_risk_report()
     df = pd.DataFrame(data)
 
-    # Ensure reports folder exists
     reports_folder = Path("reports")
     reports_folder.mkdir(exist_ok=True)
 
-    # Generate filename
     today_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"device_risk_report_{today_str}.csv"
     file_path = reports_folder / filename
 
-    # Save CSV
     df.to_csv(file_path, index=False)
 
     return FileResponse(
