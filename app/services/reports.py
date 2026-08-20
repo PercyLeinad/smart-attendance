@@ -45,7 +45,7 @@ def get_attendance_report(start_date, end_date):
     This is heavily weighted as it strongly suggests account sharing or misuse.
 """
 
-def get_device_risk_report(start_date, end_date):
+def get_device_risk_report():
     with engine.connect() as connection:
         result = connection.execute(
             text("""
@@ -63,7 +63,7 @@ def get_device_risk_report(start_date, end_date):
                     ELSE 0 
                 END) AS shared_device_flag,
 
-                /* ✅ Convert UTC to Local Time here */
+                /* Convert UTC to Local Time */
                 CONVERT_TZ(MAX(d.last_seen), '+00:00', :tz_offset) AS last_seen,
 
                 /* =========================
@@ -81,7 +81,7 @@ def get_device_risk_report(start_date, end_date):
                 ON e.pf COLLATE utf8mb4_general_ci 
                 = d.staff_pf COLLATE utf8mb4_general_ci
 
-            /* shared device detection subquery */
+            /* Shared device detection subquery */
             LEFT JOIN (
                 SELECT 
                     fingerprint_hash,
@@ -92,18 +92,12 @@ def get_device_risk_report(start_date, end_date):
                 ON sd.fingerprint_hash COLLATE utf8mb4_general_ci 
                 = d.fingerprint_hash COLLATE utf8mb4_general_ci
 
-            /* ✅ index-friendly date filtering */
-            WHERE d.last_seen >= :start_date
-              AND d.last_seen < :end_date_plus_one
-
             GROUP BY e.pf, e.name
 
             ORDER BY risk_score DESC, last_seen DESC
             """),
             {
-                "start_date": start_date,
-                "end_date_plus_one": end_date + timedelta(days=1),
-                "tz_offset": "+03:00" # Or pass the timezone name if your DB has tz tables loaded
+                "tz_offset": "+03:00"
             }
         )
 
